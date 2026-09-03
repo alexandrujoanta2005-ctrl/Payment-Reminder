@@ -1,0 +1,25 @@
+NOTIFICĂRI ÎN FUNDAL CU SUPABASE + WEB PUSH
+
+Această parte este opțională. Aplicația funcționează și fără ea, dar pentru notificări care trebuie să sosească atunci când PWA este complet închisă ai nevoie de Web Push.
+
+1. Creează un proiect Supabase separat pentru această aplicație.
+2. Rulează schema.sql în SQL Editor.
+3. Activează o metodă de autentificare (Google sau email). Datele trebuie legate de un user_id.
+4. Generează o pereche VAPID (public/private). Cheia privată NU se pune în GitHub.
+5. În Supabase Edge Functions creează funcția send-reminders și pune conținutul din functions/send-reminders/index.ts.
+6. Configurează secretele funcției:
+   - VAPID_PUBLIC_KEY
+   - VAPID_PRIVATE_KEY
+   - VAPID_SUBJECT (de ex. mailto:emailul-tau@example.com)
+   SUPABASE_URL și SUPABASE_SERVICE_ROLE_KEY sunt disponibile în mediul Edge Function.
+7. Configurează o rulare periodică a funcției, de exemplu o dată pe minut, din Supabase Cron / Scheduled Functions.
+8. Front-end-ul trebuie apoi conectat la Supabase pentru:
+   - sincronizarea reminderelor în tabela reminders
+   - salvarea PushSubscription în push_subscriptions
+   - subscriptionManager.subscribe({userVisibleOnly:true, applicationServerKey: VAPID_PUBLIC_KEY})
+
+IMPORTANT
+- Pe iPhone, Web Push este disponibil pentru site-uri instalate ca aplicație pe Home Screen și după acordarea permisiunii de notificări.
+- Nu pune SERVICE ROLE KEY sau VAPID_PRIVATE_KEY în index.html/app.js/GitHub.
+
+Dacă vrei, următoarea versiune poate fi conectată complet la proiectul tău Supabase și îți pregătesc exact fișierele cu URL-ul și publishable key-ul proiectului tău.

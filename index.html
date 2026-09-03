@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Payment Reminder" />
+  <title>Payment Reminder</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ABONAMENTE ÎMPĂRȚITE</p>
+        <h1>Payment Reminder</h1>
+      </div>
+      <button id="notifBtn" class="icon-btn" aria-label="Activează notificările" title="Notificări">🔔</button>
+    </header>
+
+    <main>
+      <section id="homeView" class="view active">
+        <div class="summary-grid">
+          <article class="summary-card hero">
+            <span>De primit</span>
+            <strong id="totalDue">0 lei</strong>
+            <small id="dueCount">0 plăți active</small>
+          </article>
+          <article class="summary-card">
+            <span>Restante</span>
+            <strong id="overdueTotal">0 lei</strong>
+            <small id="overdueCount">0 restante</small>
+          </article>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <h2>Următoarele plăți</h2>
+            <p>Apasă pe o plată ca s-o modifici.</p>
+          </div>
+          <button id="addTopBtn" class="primary small">+ Adaugă</button>
+        </div>
+
+        <div id="upcomingList" class="card-list"></div>
+      </section>
+
+      <section id="friendsView" class="view">
+        <div class="section-head"><div><h2>Prieteni</h2><p>Cât are de dat fiecare.</p></div></div>
+        <div id="friendsList" class="card-list"></div>
+      </section>
+
+      <section id="historyView" class="view">
+        <div class="section-head"><div><h2>Istoric</h2><p>Plățile pe care le-ai marcat ca primite.</p></div></div>
+        <div id="historyList" class="card-list"></div>
+      </section>
+
+      <section id="settingsView" class="view">
+        <div class="section-head"><div><h2>Setări</h2><p>Notificări, backup și testare.</p></div></div>
+        <div class="settings-card">
+          <div class="setting-row">
+            <div><b>Notificări</b><small id="notifStatus">Neactivate</small></div>
+            <button id="enableNotifBtn" class="secondary">Activează</button>
+          </div>
+          <div class="setting-row">
+            <div><b>Test notificare</b><small>Vezi dacă telefonul afișează notificări.</small></div>
+            <button id="testNotifBtn" class="secondary">Testează</button>
+          </div>
+          <div class="setting-row stack">
+            <div><b>Backup local</b><small>Salvează toate abonamentele într-un fișier JSON.</small></div>
+            <div class="row-actions">
+              <button id="exportBtn" class="secondary">Exportă</button>
+              <label class="secondary file-label">Importă<input id="importInput" type="file" accept="application/json" hidden></label>
+            </div>
+          </div>
+          <div class="note">
+            <b>Important pe iPhone:</b> notificările web funcționează cel mai bine când aplicația este instalată pe ecranul principal. Pentru notificări garantate când aplicația este complet închisă, ai inclus în ZIP și varianta Supabase + Web Push pentru configurare ulterioară.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigare principală">
+      <button data-view="homeView" class="active"><span>🏠</span><small>Acasă</small></button>
+      <button data-view="friendsView"><span>👥</span><small>Prieteni</small></button>
+      <button id="addNavBtn" class="add-main"><span>＋</span><small>Adaugă</small></button>
+      <button data-view="historyView"><span>🧾</span><small>Istoric</small></button>
+      <button data-view="settingsView"><span>⚙️</span><small>Setări</small></button>
+    </nav>
+  </div>
+
+  <dialog id="paymentDialog">
+    <form id="paymentForm" method="dialog">
+      <div class="dialog-head">
+        <div><p class="eyebrow">PLATĂ</p><h2 id="dialogTitle">Adaugă plată</h2></div>
+        <button type="button" id="closeDialog" class="icon-btn">✕</button>
+      </div>
+      <input type="hidden" id="paymentId" />
+      <label>Numele prietenului<input id="friendName" required maxlength="60" placeholder="Ex: Andrei" /></label>
+      <label>Abonament / motiv<input id="serviceName" required maxlength="60" placeholder="Ex: YouTube Premium" /></label>
+      <div class="two-col">
+        <label>Sumă<input id="amount" type="number" min="0" step="0.01" required placeholder="25" /></label>
+        <label>Monedă<select id="currency"><option value="RON">RON</option><option value="EUR">EUR</option><option value="USD">USD</option></select></label>
+      </div>
+      <div class="two-col">
+        <label>Scadență<input id="dueDate" type="date" required /></label>
+        <label>Ora scadenței<input id="dueTime" type="time" value="18:00" required /></label>
+      </div>
+      <div class="two-col">
+        <label>Notifică-mă la<input id="reminderDate" type="date" required /></label>
+        <label>Ora notificării<input id="reminderTime" type="time" value="18:00" required /></label>
+      </div>
+      <label>Repetare<select id="recurrence"><option value="monthly">Lunar</option><option value="yearly">Anual</option><option value="once">O singură dată</option></select></label>
+      <label>Notiță<textarea id="note" maxlength="200" placeholder="Ex: partea lui din abonamentul Family"></textarea></label>
+      <div class="dialog-actions">
+        <button type="button" id="deleteBtn" class="danger hidden">Șterge</button>
+        <button type="submit" class="primary">Salvează</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
