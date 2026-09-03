@@ -1,25 +1,74 @@
-NOTIFICĂRI ÎN FUNDAL CU SUPABASE + WEB PUSH
+PAYMENT REMINDER v3 — NOTIFICĂRI CÂND APLICAȚIA ESTE ÎNCHISĂ
 
-Această parte este opțională. Aplicația funcționează și fără ea, dar pentru notificări care trebuie să sosească atunci când PWA este complet închisă ai nevoie de Web Push.
+Ai nevoie de UN proiect Supabase separat pentru Payment Reminder. Poate fi creat în același cont/email Supabase pe care îl folosești deja.
 
-1. Creează un proiect Supabase separat pentru această aplicație.
-2. Rulează schema.sql în SQL Editor.
-3. Activează o metodă de autentificare (Google sau email). Datele trebuie legate de un user_id.
-4. Generează o pereche VAPID (public/private). Cheia privată NU se pune în GitHub.
-5. În Supabase Edge Functions creează funcția send-reminders și pune conținutul din functions/send-reminders/index.ts.
-6. Configurează secretele funcției:
-   - VAPID_PUBLIC_KEY
-   - VAPID_PRIVATE_KEY
-   - VAPID_SUBJECT (de ex. mailto:emailul-tau@example.com)
-   SUPABASE_URL și SUPABASE_SERVICE_ROLE_KEY sunt disponibile în mediul Edge Function.
-7. Configurează o rulare periodică a funcției, de exemplu o dată pe minut, din Supabase Cron / Scheduled Functions.
-8. Front-end-ul trebuie apoi conectat la Supabase pentru:
-   - sincronizarea reminderelor în tabela reminders
-   - salvarea PushSubscription în push_subscriptions
-   - subscriptionManager.subscribe({userVisibleOnly:true, applicationServerKey: VAPID_PUBLIC_KEY})
+1) CREEAZĂ PROIECTUL SUPABASE
+- Nume recomandat: PAYMENT REMINDER
+- Nu folosi proiectele DUO LOVE / LOVE AI.
+
+2) ACTIVEAZĂ ANONYMOUS SIGN-INS
+În Supabase -> Authentication -> Settings / General configuration:
+- Allow anonymous sign-ins = ON
+Aplicația creează automat un utilizator anonim pe telefon, fără email/parolă.
+
+3) RULEAZĂ BAZA DE DATE
+Supabase -> SQL Editor -> New query
+- copiază tot din schema.sql
+- Run
+
+4) GENEREAZĂ CHEILE VAPID
+După ce ai aplicația pe GitHub Pages, deschide:
+  https://ADRESA-TA/supabase/vapid-generator.html
+Apasă "Generează cheile".
+
+Primești:
+- Public Key: poate fi pusă în aplicație și în Supabase.
+- Private Key: SECRET. NU o urca în GitHub și NU o pune în app.js/index.html.
+
+5) CREEAZĂ EDGE FUNCTION
+În Supabase creează funcția: send-reminders
+Folosește fișierul:
+  supabase/functions/send-reminders/index.ts
+
+Dacă folosești Supabase CLI, folderul este deja în structura corectă.
+Fișierul supabase/config.toml setează verify_jwt=false pentru această funcție; funcția validează singură JWT-ul pentru test și nu expune datele reminderelor.
+
+6) SECRETELE EDGE FUNCTION
+În Supabase -> Edge Functions -> Secrets setează:
+- VAPID_PUBLIC_KEY = cheia publică generată
+- VAPID_PRIVATE_KEY = cheia privată generată
+- VAPID_SUBJECT = mailto:adresa-ta@email.com
+
+SUPABASE_URL și SUPABASE_SERVICE_ROLE_KEY sunt variabile server-side ale proiectului. Nu pune service_role în GitHub sau în aplicație.
+
+7) PORNEȘTE CRON-UL
+Supabase -> Integrations -> Cron -> Create job
+- Name: payment-reminder-push
+- Schedule: * * * * *
+- Target: Supabase Edge Function
+- Function: send-reminders
+- Method: POST
+- Body: {}
+Salvează job-ul.
+Astfel serverul verifică în fiecare minut ce notificări au ajuns la ora aleasă.
+
+8) COMPLETEAZĂ CELE 3 VALORI ÎN APLICAȚIE
+Payment Reminder -> Setări -> Push Cloud -> Configurează
+Introdu:
+- Supabase Project URL (https://xxxxx.supabase.co)
+- Publishable key (sb_publishable_...)
+- VAPID Public Key
+Apasă "Salvează și conectează".
+
+9) PE IPHONE
+- Aplicația trebuie adăugată la Home Screen.
+- Deschide aplicația instalată.
+- Apasă "Activează" la Notificări și acceptă permisiunea.
+- Push Cloud trebuie să scrie: "Activ — notificări și cu aplicația închisă".
+- Apasă "Testează". Testul este trimis prin server.
 
 IMPORTANT
-- Pe iPhone, Web Push este disponibil pentru site-uri instalate ca aplicație pe Home Screen și după acordarea permisiunii de notificări.
-- Nu pune SERVICE ROLE KEY sau VAPID_PRIVATE_KEY în index.html/app.js/GitHub.
-
-Dacă vrei, următoarea versiune poate fi conectată complet la proiectul tău Supabase și îți pregătesc exact fișierele cu URL-ul și publishable key-ul proiectului tău.
+- iPhone/iPad suportă Web Push pentru web apps instalate pe Home Screen.
+- Nu ai nevoie de Apple Developer Program pentru Web Push.
+- Ora reminderului este trimisă în Supabase ca timestamptz, calculată din ora locală a telefonului.
+- Cron rulează la minut, deci notificarea poate ajunge cu o întârziere de aproximativ 0–60 secunde.

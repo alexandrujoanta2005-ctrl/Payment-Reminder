@@ -66,7 +66,11 @@
             <button id="enableNotifBtn" class="secondary">Activează</button>
           </div>
           <div class="setting-row">
-            <div><b>Test notificare</b><small>Vezi dacă telefonul afișează notificări.</small></div>
+            <div><b>Push Cloud</b><small id="pushCloudStatus">Neconfigurat</small></div>
+            <button id="pushCloudBtn" class="secondary">Configurează</button>
+          </div>
+          <div class="setting-row">
+            <div><b>Test notificare</b><small>Cu Push Cloud activ, testul vine prin server.</small></div>
             <button id="testNotifBtn" class="secondary">Testează</button>
           </div>
           <div class="setting-row stack">
@@ -77,7 +81,7 @@
             </div>
           </div>
           <div class="note">
-            <b>Important pe iPhone:</b> notificările web funcționează cel mai bine când aplicația este instalată pe ecranul principal. Pentru notificări garantate când aplicația este complet închisă, ai inclus în ZIP și varianta Supabase + Web Push pentru configurare ulterioară.
+            <b>Notificări cu aplicația închisă:</b> activează Push Cloud o singură dată. Pe iPhone, Payment Reminder trebuie adăugată pe ecranul principal și permisiunea de notificări trebuie acordată din aplicația instalată.
           </div>
         </div>
       </section>
@@ -122,7 +126,26 @@
     </form>
   </dialog>
 
+
+  <dialog id="cloudDialog">
+    <form id="cloudForm" method="dialog">
+      <div class="dialog-head">
+        <div><p class="eyebrow">WEB PUSH</p><h2>Push Cloud</h2></div>
+        <button type="button" id="closeCloudDialog" class="icon-btn">✕</button>
+      </div>
+      <p class="dialog-help">Completează cele 3 valori publice din proiectul Supabase dedicat aplicației. Parola bazei de date și service_role NU se pun aici.</p>
+      <label>Supabase Project URL<input id="cloudSupabaseUrl" type="url" required placeholder="https://xxxx.supabase.co" /></label>
+      <label>Publishable key<input id="cloudSupabaseKey" required autocomplete="off" placeholder="sb_publishable_..." /></label>
+      <label>VAPID Public Key<textarea id="cloudVapidKey" required spellcheck="false" placeholder="Cheia publică VAPID"></textarea></label>
+      <div class="dialog-actions split-actions">
+        <button type="button" id="clearCloudBtn" class="danger">Șterge configurarea</button>
+        <button type="submit" class="primary">Salvează și conectează</button>
+      </div>
+    </form>
+  </dialog>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
   <script src="app.js"></script>
 </body>
 </html>

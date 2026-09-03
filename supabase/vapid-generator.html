@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payment Reminder — VAPID Generator</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;background:#0b1020;color:#f5f7ff;margin:0;padding:24px}main{max-width:760px;margin:auto}.card{background:#151c30;border:1px solid #2c3652;border-radius:20px;padding:20px}button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;background:#7c5cff;color:white}textarea{width:100%;min-height:95px;background:#0b1020;color:#fff;border:1px solid #34405f;border-radius:12px;padding:12px;box-sizing:border-box;margin:8px 0 18px;font-family:ui-monospace,monospace;word-break:break-all}.warn{color:#ffc2cc}.ok{color:#7af0d8}small{color:#aeb8d0;line-height:1.5;display:block}</style>
+</head>
+<body><main><div class="card">
+<h1>VAPID Keys</h1>
+<p>Apasă o singură dată. Cheile sunt generate local în browser și nu sunt trimise nicăieri.</p>
+<button id="gen">Generează cheile</button>
+<h3>Public Key</h3><textarea id="pub" readonly></textarea>
+<small class="ok">Aceasta poate fi pusă în aplicație la Push Cloud și în secretul VAPID_PUBLIC_KEY.</small>
+<h3>Private Key</h3><textarea id="priv" readonly></textarea>
+<small class="warn"><b>SECRET:</b> pune-o numai în Supabase Edge Function secret VAPID_PRIVATE_KEY. Nu o urca în GitHub și nu o trimite altcuiva.</small>
+</div></main>
+<script>
+const b64uToBytes=s=>{const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))};
+const bytesToB64u=b=>btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+document.getElementById('gen').onclick=async()=>{
+ try{
+  const pair=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  const pub=await crypto.subtle.exportKey('jwk',pair.publicKey); const priv=await crypto.subtle.exportKey('jwk',pair.privateKey);
+  const x=b64uToBytes(pub.x), y=b64uToBytes(pub.y); const out=new Uint8Array(65); out[0]=4; out.set(x,1); out.set(y,33);
+  document.getElementById('pub').value=bytesToB64u(out);
+  document.getElementById('priv').value=priv.d;
+ }catch(e){alert('Nu am putut genera cheile: '+e.message)}
+};
+</script></body></html>

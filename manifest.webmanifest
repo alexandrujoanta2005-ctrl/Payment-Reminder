@@ -1,7 +1,8 @@
 {
+  "id": "./",
   "name": "Payment Reminder",
   "short_name": "Reminder",
-  "description": "Ține evidența banilor de primit pentru abonamente și primește notificări.",
+  "description": "Ține evidența banilor de primit pentru abonamente și primește notificări chiar și când aplicația este închisă.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

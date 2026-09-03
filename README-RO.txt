@@ -1,24 +1,21 @@
-PAYMENT REMINDER — v2
+PAYMENT REMINDER — v3
 
-CE FACE ACUM
-- Adaugi prieten, abonament, sumă, scadență și ora exactă la care vrei notificarea.
-- Repetare: lunar / anual / o singură dată.
-- Marchezi "Plătit" și aplicația mută automat următoarea scadență pentru plățile recurente.
-- Istoric cu plățile primite.
-- Buton "Amintește peste 1h".
-- Export/import backup JSON.
-- PWA instalabilă pe iPhone/Android.
-- Notificări locale când aplicația este activă sau revine în prim-plan.
+NOU ÎN v3
+- Web Push real pentru notificări chiar dacă aplicația este închisă.
+- Integrare Supabase din Setări -> Push Cloud.
+- Sesiune anonimă: nu ai nevoie de login/email pentru aplicație.
+- Reminder-ele active sunt sincronizate în Supabase pentru ca serverul să știe când să trimită push-ul.
+- Test push prin server.
+- Pe iPhone funcționează ca Home Screen web app, după permisiunea de notificări.
 
-IMPORTANT DESPRE IPHONE
-Browserul nu garantează un timer JavaScript dacă PWA este complet închisă. Pentru notificări care trebuie să vină chiar și când aplicația este închisă, folosește varianta Web Push din folderul supabase/.
+APLICAȚIA RĂMÂNE FUNCȚIONALĂ ȘI FĂRĂ SUPABASE
+Dacă Push Cloud nu este configurat, Payment Reminder păstrează datele local și poate afișa notificări cât timp aplicația rulează. Pentru aplicația complet închisă trebuie făcut setup-ul din supabase/SETUP-PUSH-RO.txt.
 
-INSTALARE RAPIDĂ PE GITHUB PAGES
-1. Creează un repository nou, de exemplu bani-de-primit.
-2. Urcă TOT conținutul acestui ZIP în rădăcina repository-ului.
-3. Settings -> Pages -> Deploy from branch -> main / root.
-4. Deschide URL-ul GitHub Pages.
-5. Pe iPhone: Share -> Add to Home Screen.
-6. Deschide aplicația instalată și apasă clopoțelul pentru notificări.
+GITHUB PAGES
+1. Urcă TOT conținutul ZIP-ului în repository.
+2. Settings -> Pages -> Deploy from branch -> main / root.
+3. Pe iPhone: deschide pagina -> Share -> Add to Home Screen.
+4. Deschide aplicația de pe Home Screen.
 
-Pentru varianta de notificări în fundal vezi: supabase/SETUP-PUSH-RO.txt
+PENTRU PUSH ÎN FUNDAL
+Urmează: supabase/SETUP-PUSH-RO.txt
