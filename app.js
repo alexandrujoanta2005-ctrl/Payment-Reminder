@@ -74,7 +74,8 @@ $('#savePreferences').addEventListener('click',()=>{const p={profileName:$('#pro
 $('#resetPreferences').addEventListener('click',()=>{if(!confirm('Resetezi preferințele?'))return;localStorage.removeItem(PREFS_KEY);localStorage.removeItem('pr_default_wa_text');loadPreferences();toast('Preferințe resetate')});
 $('#refreshAppBtn').addEventListener('click',()=>{renderAll();renderScheduledMessages();toast('Date reîmprospătate')});
 $('#clearLocalBtn').addEventListener('click',()=>{if(!confirm('Ștergi toate plățile, istoricul și mesajele programate local? Această acțiune nu poate fi anulată.'))return;state.payments=[];state.history=[];scheduledMessages=[];save({sync:false});persistMessages();localStorage.removeItem(NOTIFIED_KEY);toast('Date locale șterse')});
-\nfunction setupPin(){
+
+function setupPin(){
  $('#pinBtn').addEventListener('click',()=>{const pin=prompt('Setează un PIN de 4-6 cifre:');if(!pin)return;if(!/^\d{4,6}$/.test(pin)){toast('PIN-ul trebuie să aibă 4-6 cifre');return}localStorage.setItem(PIN_KEY,pin);toast('PIN salvat pe acest dispozitiv')});
  if(localStorage.getItem(PIN_KEY)&&!sessionStorage.getItem('pin_ok')){const p=prompt('Introdu PIN-ul Payment Reminder');if(p===localStorage.getItem(PIN_KEY))sessionStorage.setItem('pin_ok','1');else{document.body.innerHTML='<main style="padding:30px;color:white;background:#090d18;min-height:100vh">Acces blocat. Reîncarcă și introdu PIN-ul corect.</main>';}}
  $('#calendarBtn').addEventListener('click',renderCalendar);$('#reportBtn').addEventListener('click',exportReport);
