@@ -7,7 +7,7 @@ const state={payments:load(STORAGE_KEY,[]),history:load(HISTORY_KEY,[])};
 const cloud={client:null,user:null,ready:false,pushReady:false,busy:false};
 
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
-function save({sync=true}={}){localStorage.setItem(STORAGE_KEY,JSON.stringify(state.payments));localStorage.setItem(HISTORY_KEY,JSON.stringify(state.history));renderAll();setupPin();if(sync)queueCloudSync()}
+function save({sync=true}={}){localStorage.setItem(STORAGE_KEY,JSON.stringify(state.payments));localStorage.setItem(HISTORY_KEY,JSON.stringify(state.history));renderAll();if(sync)queueCloudSync()}
 function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function fmtMoney(v,c='RON'){try{return new Intl.NumberFormat('ro-RO',{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(v)||0)}catch{return `${v} ${c}`}}
 function fmtDate(date,time){const d=new Date(`${date}T${time||'00:00'}`);return d.toLocaleString('ro-RO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
