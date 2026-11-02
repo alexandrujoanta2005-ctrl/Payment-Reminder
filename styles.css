@@ -26,3 +26,8 @@ input,select,textarea{font-size:16px!important}
 .light-theme input,.light-theme select,.light-theme textarea{background:#fff;color:#172033}
 .light-theme .topbar{background:linear-gradient(#f2f5fb 70%,transparent)}
 .light-theme .bottom-nav{background:rgba(255,255,255,.94)}
+
+.settings-extra{padding:16px;margin:12px 0;border:1px solid var(--line);border-radius:18px;background:rgba(124,92,255,.055)}
+.settings-extra h3{font-size:1rem;margin:0 0 10px}
+.settings-extra .row-actions{flex-wrap:wrap}
+.settings-extra .row-actions button{flex:1}

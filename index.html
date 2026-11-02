@@ -91,7 +91,20 @@
               <label class="secondary file-label">Importă<input id="importInput" type="file" accept="application/json" hidden></label>
             </div>
           </div>
-          <div class="setting-row"><div><b>Protecție PIN</b><small>Blocare locală la pornire</small></div><button id="pinBtn" class="secondary">Setează PIN</button></div><div class="note"><b>Face ID:</b> PWA nu poate accesa direct Face ID. PIN-ul este protecție locală simplă.</div><div class="note">
+          <div class="settings-extra">
+<h3>⚙️ Preferințe aplicație</h3>
+<label>Numele aplicației / titular<input id="profileName" maxlength="60" placeholder="Ex: Familia mea"></label>
+<div class="two-col"><label>Monedă implicită<select id="defaultCurrency"><option value="RON">RON</option><option value="EUR">EUR</option><option value="USD">USD</option></select></label><label>Ora implicită reminder<input id="defaultReminderTime" type="time" value="18:00"></label></div>
+<label>Mesaj WhatsApp implicit<textarea id="defaultWaText" rows="3" maxlength="500" placeholder="Salut {nume}, îți reamintesc de {abonament}: {suma}, scadent {data}."></textarea></label>
+<div class="row-actions"><button id="savePreferences" class="primary">Salvează preferințele</button><button id="resetPreferences" class="secondary">Reset</button></div>
+<p class="note">Variabile mesaj: {nume}, {abonament}, {suma}, {data}. Se aplică mesajelor WhatsApp generate din plăți.</p>
+</div>
+<div class="settings-extra">
+<h3>🧰 Instrumente</h3>
+<div class="setting-row"><div><b>Reîmprospătare date</b><small>Reafișează plățile și statisticile.</small></div><button id="refreshAppBtn" class="secondary">Reîncarcă</button></div>
+<div class="setting-row"><div><b>Curățare date locale</b><small>Șterge plățile, istoricul și mesajele programate de pe acest dispozitiv.</small></div><button id="clearLocalBtn" class="danger">Șterge date</button></div>
+</div>
+<div class="setting-row"><div><b>Protecție PIN</b><small>Blocare locală la pornire</small></div><button id="pinBtn" class="secondary">Setează PIN</button></div><div class="note"><b>Face ID:</b> PWA nu poate accesa direct Face ID. PIN-ul este protecție locală simplă.</div><div class="note">
             <b>Notificări cu aplicația închisă:</b> activează Push Cloud o singură dată. Pe iPhone, Payment Reminder trebuie adăugată pe ecranul principal și permisiunea de notificări trebuie acordată din aplicația instalată.
           </div>
         </div>
