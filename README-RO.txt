@@ -19,3 +19,9 @@ GITHUB PAGES
 
 PENTRU PUSH ÎN FUNDAL
 Urmează: supabase/SETUP-PUSH-RO.txt
+
+ÎMBUNĂTĂȚIRI iPhone (Plus)
+- Zoom-ul pinch este dezactivat în aplicație (viewport).
+- Căutare rapidă după prieten, abonament sau notiță.
+- Filtru „Doar restante” în lista de plăți.
+- Câmpurile au font de 16px pentru a evita zoom-ul automat la focus pe iPhone.
