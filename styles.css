@@ -10,3 +10,19 @@ input,select,textarea{font-size:16px!important}
 .filter-btn{white-space:nowrap;padding:10px 12px}
 .filter-btn.filter-active{background:rgba(255,100,124,.16);border-color:rgba(255,100,124,.4);color:#ff9aac}
 @media(max-width:380px){.summary-card{padding:14px}.summary-card strong{font-size:1.35rem}.filters{gap:6px}.filter-btn{padding:10px}}
+
+.pro-tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.pro-tools button{flex:1;min-width:105px}
+.month-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 18px}
+.mini-stat{padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--line);min-width:0}
+.mini-stat small{display:block;color:var(--muted);font-size:.72rem}.mini-stat b{display:block;margin-top:5px;font-size:.95rem;overflow-wrap:anywhere}
+.calendar-panel{padding:15px;border-radius:18px;background:var(--card);margin-bottom:15px}.calendar-panel h3{text-transform:capitalize;margin:0 0 12px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.calendar-grid span{padding:8px 2px;border-radius:9px}.calendar-grid .weekday{font-size:.72rem;color:var(--muted);font-weight:800}
+.calendar-grid .has-payment{background:rgba(124,92,255,.2);color:#c5b5ff;font-weight:900}
+.calendar-grid .day small{display:block;font-size:.62rem}
+.light-theme{background:#f2f5fb!important;color:#172033!important;--card:#fff;--card2:#fff;--muted:#64718a;--line:rgba(0,0,0,.1)}
+.light-theme .payment-card,.light-theme .friend-card,.light-theme .history-card,.light-theme .settings-card,.light-theme .calendar-panel{background:#fff;color:#172033}
+.light-theme input,.light-theme select,.light-theme textarea{background:#fff;color:#172033}
+.light-theme .topbar{background:linear-gradient(#f2f5fb 70%,transparent)}
+.light-theme .bottom-nav{background:rgba(255,255,255,.94)}

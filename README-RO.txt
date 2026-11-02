@@ -25,3 +25,12 @@ Urmează: supabase/SETUP-PUSH-RO.txt
 - Căutare rapidă după prieten, abonament sau notiță.
 - Filtru „Doar restante” în lista de plăți.
 - Câmpurile au font de 16px pentru a evita zoom-ul automat la focus pe iPhone.
+
+PAYMENT REMINDER PRO – funcții adăugate
+- Calendar lunar cu zilele în care există scadențe.
+- Sumar lunar: număr scadențe, total și încasări din istoric.
+- Raport imprimabil / salvabil PDF din dialogul de print iOS.
+- Mesaj WhatsApp precompletat per plată.
+- Temă luminoasă / întunecată.
+- PIN local (protecție simplă pe dispozitiv; nu este Face ID).
+- Face ID și widget iOS nativ necesită o aplicație nativă iOS, nu sunt disponibile direct într-un PWA.

@@ -7,7 +7,7 @@ const state={payments:load(STORAGE_KEY,[]),history:load(HISTORY_KEY,[])};
 const cloud={client:null,user:null,ready:false,pushReady:false,busy:false};
 
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
-function save({sync=true}={}){localStorage.setItem(STORAGE_KEY,JSON.stringify(state.payments));localStorage.setItem(HISTORY_KEY,JSON.stringify(state.history));renderAll();if(sync)queueCloudSync()}
+function save({sync=true}={}){localStorage.setItem(STORAGE_KEY,JSON.stringify(state.payments));localStorage.setItem(HISTORY_KEY,JSON.stringify(state.history));renderAll();setupPin();if(sync)queueCloudSync()}
 function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function fmtMoney(v,c='RON'){try{return new Intl.NumberFormat('ro-RO',{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(v)||0)}catch{return `${v} ${c}`}}
 function fmtDate(date,time){const d=new Date(`${date}T${time||'00:00'}`);return d.toLocaleString('ro-RO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
@@ -15,10 +15,40 @@ function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');cl
 function nextDate(date,rec){const d=new Date(`${date}T12:00:00`);if(rec==='monthly')d.setMonth(d.getMonth()+1);if(rec==='yearly')d.setFullYear(d.getFullYear()+1);return d.toISOString().slice(0,10)}
 function isOverdue(p){return new Date(`${p.dueDate}T${p.dueTime}`)<new Date()}
 function totalByCurrency(items){const map={};items.forEach(p=>map[p.currency]=(map[p.currency]||0)+Number(p.amount||0));return Object.entries(map).map(([c,v])=>fmtMoney(v,c)).join(' + ')||'0 lei'}
-function renderAll(){renderHome();renderFriends();renderHistory();updateNotifStatus();updateCloudStatus()}
+
+const PIN_KEY='payment_reminder_pin_v1', THEME_KEY='payment_reminder_theme_v1';
+function renderPro(){
+ const now=new Date(), m=now.getMonth(), y=now.getFullYear();
+ const month=state.payments.filter(p=>{const d=new Date(p.dueDate+'T12:00:00');return d.getMonth()===m&&d.getFullYear()===y});
+ $('#monthStats').innerHTML=`<div class="mini-stat"><small>Scadențe luna aceasta</small><b>${month.length}</b></div><div class="mini-stat"><small>Total luna aceasta</small><b>${totalByCurrency(month)}</b></div><div class="mini-stat"><small>Încasate (istoric)</small><b>${totalByCurrency(state.history.filter(p=>{const d=new Date(p.paidAt);return d.getMonth()===m&&d.getFullYear()===y}))}</b></div>`;
+}
+function renderCalendar(){
+ const panel=$('#calendarPanel');panel.classList.toggle('hidden');if(panel.classList.contains('hidden'))return;
+ const now=new Date(),y=now.getFullYear(),m=now.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+ const counts={};state.payments.forEach(p=>{if(p.dueDate.startsWith(`${y}-${String(m+1).padStart(2,'0')}`))counts[Number(p.dueDate.slice(-2))]=(counts[Number(p.dueDate.slice(-2))]||0)+1});
+ panel.innerHTML=`<h3>${now.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})}</h3><div class="calendar-grid">${['L','M','M','J','V','S','D'].map(x=>`<span class="weekday">${x}</span>`).join('')}${Array((first+6)%7).fill('<span></span>').join('')}${Array.from({length:days},(_,i)=>{let d=i+1;return `<span class="day ${counts[d]?'has-payment':''}">${d}${counts[d]?`<small>${counts[d]}</small>`:''}</span>`}).join('')}</div><small>Bulina violetă indică plăți programate.</small>`;
+}
+function exportReport(){
+ const rows=[...state.payments].map(p=>`${p.friend} | ${p.service} | ${p.dueDate} | ${fmtMoney(p.amount,p.currency)} | ${isOverdue(p)?'RESTANT':'Activ'}`).join('\n');
+ const w=window.open('','_blank');if(!w){toast('Permite ferestrele pop-up pentru raport');return}
+ w.document.write(`<html><head><title>Raport Payment Reminder</title><style>body{font:16px system-ui;padding:30px}table{width:100%;border-collapse:collapse}td,th{padding:10px;border:1px solid #ddd;text-align:left}</style></head><body><h1>Payment Reminder – Raport</h1><p>Generat ${new Date().toLocaleDateString('ro-RO')}</p><pre>${rows.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</pre><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();
+}
+function shareWhatsApp(p){
+ const text=`Salut ${p.friend}! Îți reamintesc de ${p.service}: ${fmtMoney(p.amount,p.currency)}, scadent ${p.dueDate}. Mulțumesc!`;
+ window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
+function setupPin(){
+ $('#pinBtn').addEventListener('click',()=>{const pin=prompt('Setează un PIN de 4-6 cifre:');if(!pin)return;if(!/^\d{4,6}$/.test(pin)){toast('PIN-ul trebuie să aibă 4-6 cifre');return}localStorage.setItem(PIN_KEY,pin);toast('PIN salvat pe acest dispozitiv')});
+ if(localStorage.getItem(PIN_KEY)&&!sessionStorage.getItem('pin_ok')){const p=prompt('Introdu PIN-ul Payment Reminder');if(p===localStorage.getItem(PIN_KEY))sessionStorage.setItem('pin_ok','1');else{document.body.innerHTML='<main style="padding:30px;color:white;background:#090d18;min-height:100vh">Acces blocat. Reîncarcă și introdu PIN-ul corect.</main>';}}
+ $('#calendarBtn').addEventListener('click',renderCalendar);$('#reportBtn').addEventListener('click',exportReport);
+ $('#themeBtn').addEventListener('click',()=>{const light=document.body.classList.toggle('light-theme');localStorage.setItem(THEME_KEY,light?'light':'dark');$('#themeBtn').textContent=light?'🌙 Temă întunecată':'☀️ Temă luminoasă'});
+ if(localStorage.getItem(THEME_KEY)==='light')document.body.classList.add('light-theme');
+}
+
+function renderAll(){renderHome();renderFriends();renderHistory();renderPro();updateNotifStatus();updateCloudStatus()}
 
 function renderHome(){const active=[...state.payments].sort((a,b)=>new Date(`${a.dueDate}T${a.dueTime}`)-new Date(`${b.dueDate}T${b.dueTime}`));const overdue=active.filter(isOverdue);$('#totalDue').textContent=totalByCurrency(active);$('#dueCount').textContent=`${active.length} ${active.length===1?'plată activă':'plăți active'}`;$('#overdueTotal').textContent=totalByCurrency(overdue);$('#overdueCount').textContent=`${overdue.length} ${overdue.length===1?'restanță':'restante'}`;const q=($('#paymentSearch')?.value||'').trim().toLocaleLowerCase('ro');const onlyOverdue=$('#overdueFilter')?.dataset.active==='true';const visible=active.filter(p=>(!q||`${p.friend} ${p.service} ${p.note||''}`.toLocaleLowerCase('ro').includes(q))&&(!onlyOverdue||isOverdue(p)));const box=$('#upcomingList');box.innerHTML='';if(!visible.length){box.innerHTML='<div class="empty">Nu ai nimic de primit. Apasă „Adaugă” și creează prima plată.</div>';return}visible.forEach(p=>box.append(paymentCard(p)))}
-function paymentCard(p){const el=document.createElement('article');el.className='payment-card'+(isOverdue(p)?' overdue':'');el.dataset.id=p.id;el.innerHTML=`<div><div class="name"></div><div class="service"></div><div class="meta"><span class="chip due"></span><span class="chip recurrence"></span>${isOverdue(p)?'<span class="chip overdue">Restant</span>':''}</div></div><div class="amount"></div><div class="card-actions"><button class="snooze-btn" data-action="snooze">Amintește peste 1h</button><button class="paid-btn" data-action="paid">✓ Plătit</button></div>`;el.querySelector('.name').textContent=p.friend;el.querySelector('.service').textContent=p.service;el.querySelector('.due').textContent=fmtDate(p.dueDate,p.dueTime);el.querySelector('.recurrence').textContent=p.recurrence==='monthly'?'Lunar':p.recurrence==='yearly'?'Anual':'O dată';el.querySelector('.amount').textContent=fmtMoney(p.amount,p.currency);el.addEventListener('click',e=>{const a=e.target.dataset.action;if(a==='paid'){e.stopPropagation();markPaid(p.id)}else if(a==='snooze'){e.stopPropagation();snooze(p.id)}else openDialog(p)});return el}
+function paymentCard(p){const el=document.createElement('article');el.className='payment-card'+(isOverdue(p)?' overdue':'');el.dataset.id=p.id;el.innerHTML=`<div><div class="name"></div><div class="service"></div><div class="meta"><span class="chip due"></span><span class="chip recurrence"></span>${isOverdue(p)?'<span class="chip overdue">Restant</span>':''}</div></div><div class="amount"></div><div class="card-actions"><button class="snooze-btn" data-action="snooze">Amintește peste 1h</button><button class="snooze-btn" data-action="whatsapp">WhatsApp</button><button class="paid-btn" data-action="paid">✓ Plătit</button></div>`;el.querySelector('.name').textContent=p.friend;el.querySelector('.service').textContent=p.service;el.querySelector('.due').textContent=fmtDate(p.dueDate,p.dueTime);el.querySelector('.recurrence').textContent=p.recurrence==='monthly'?'Lunar':p.recurrence==='yearly'?'Anual':'O dată';el.querySelector('.amount').textContent=fmtMoney(p.amount,p.currency);el.addEventListener('click',e=>{const a=e.target.dataset.action;if(a==='paid'){e.stopPropagation();markPaid(p.id)}else if(a==='whatsapp'){e.stopPropagation();shareWhatsApp(p)}else if(a==='snooze'){e.stopPropagation();snooze(p.id)}else openDialog(p)});return el}
 function renderFriends(){const map={};state.payments.forEach(p=>{if(!map[p.friend])map[p.friend]=[];map[p.friend].push(p)});const box=$('#friendsList');box.innerHTML='';const names=Object.keys(map).sort();if(!names.length){box.innerHTML='<div class="empty">Prietenii vor apărea aici după ce adaugi plăți.</div>';return}names.forEach(n=>{const el=document.createElement('article');el.className='friend-card';el.innerHTML='<div><strong></strong><small></small></div><b></b>';el.querySelector('strong').textContent=n;el.querySelector('small').textContent=`${map[n].length} ${map[n].length===1?'plată':'plăți'} active`;el.querySelector('b').textContent=totalByCurrency(map[n]);box.append(el)})}
 function renderHistory(){const box=$('#historyList');box.innerHTML='';const items=[...state.history].sort((a,b)=>new Date(b.paidAt)-new Date(a.paidAt));if(!items.length){box.innerHTML='<div class="empty">Încă nu ai plăți marcate ca primite.</div>';return}items.forEach(h=>{const el=document.createElement('article');el.className='history-card';el.innerHTML='<div class="line"><strong></strong><b></b></div><small></small>';el.querySelector('strong').textContent=`${h.friend} · ${h.service}`;el.querySelector('b').textContent=fmtMoney(h.amount,h.currency);el.querySelector('small').textContent=`Primit la ${new Date(h.paidAt).toLocaleString('ro-RO')}`;box.append(el)})}
 
@@ -128,4 +158,4 @@ async function sendCloudTestPush(){
 }
 
 if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('service-worker.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
-renderAll();checkReminders();
+renderAll();setupPin();checkReminders();
