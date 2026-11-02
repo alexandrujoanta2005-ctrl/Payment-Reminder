@@ -50,12 +50,12 @@
           <button id="overdueFilter" class="secondary filter-btn" aria-pressed="false">Restante</button>
         </div>
         <div class="pro-tools">
-          <button id="calendarBtn" class="secondary">📅 Calendar</button>
+          <button id="calendarBtn" class="secondary">📅 Calendar</button><button id="scheduleMsgBtn" class="secondary">💬 Mesaje programate</button>
           <button id="reportBtn" class="secondary">📊 Raport / PDF</button>
           <button id="themeBtn" class="secondary">☀️ Temă luminoasă</button>
         </div>
         <div id="monthStats" class="month-stats"></div>
-        <div id="calendarPanel" class="calendar-panel hidden"></div>
+        <div id="calendarPanel" class="calendar-panel hidden"></div><div id="scheduledMessagesList" class="card-list"></div>
         <div id="upcomingList" class="card-list"></div>
       </section>
 
@@ -138,7 +138,17 @@
   </dialog>
 
 
-  <dialog id="cloudDialog">
+  <dialog id="messageDialog">
+<form id="messageForm" method="dialog">
+<div class="dialog-head"><div><p class="eyebrow">WHATSAPP</p><h2>Mesaj programat</h2></div><button type="button" id="closeMessageDialog" class="icon-btn">✕</button></div>
+<input type="hidden" id="messageId">
+<label>Persoană / contact<input id="messagePerson" required maxlength="80" placeholder="Numele contactului"></label>
+<label>Număr WhatsApp (cu prefix țară)<input id="messagePhone" required inputmode="tel" placeholder="407xxxxxxxx"></label>
+<label>Mesaj<textarea id="messageText" required maxlength="1000" rows="4" placeholder="Scrie mesajul…"></textarea></label>
+<div class="two-col"><label>Data<input id="messageDate" type="date" required></label><label>Ora<input id="messageTime" type="time" required value="18:00"></label></div>
+<div class="dialog-actions"><button type="submit" class="primary">Salvează programarea</button></div>
+</form></dialog>
+\n  <dialog id="cloudDialog">
     <form id="cloudForm" method="dialog">
       <div class="dialog-head">
         <div><p class="eyebrow">WEB PUSH</p><h2>Push Cloud</h2></div>

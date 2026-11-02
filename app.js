@@ -37,6 +37,35 @@ function shareWhatsApp(p){
  const text=`Salut ${p.friend}! Îți reamintesc de ${p.service}: ${fmtMoney(p.amount,p.currency)}, scadent ${p.dueDate}. Mulțumesc!`;
  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
 }
+
+const MSG_KEY='payment_reminder_scheduled_whatsapp_v1';
+let scheduledMessages=load(MSG_KEY,[]);
+function persistMessages(){localStorage.setItem(MSG_KEY,JSON.stringify(scheduledMessages));renderScheduledMessages();}
+function renderScheduledMessages(){
+ let box=document.getElementById('scheduledMessagesList');if(!box)return;
+ box.innerHTML=scheduledMessages.length?scheduledMessages.map(m=>`<article class="payment-card"><div><b>${escapeHtml(m.person)}</b><small>${escapeHtml(m.phone)} · ${escapeHtml(m.date)} ${escapeHtml(m.time)}</small><p>${escapeHtml(m.text)}</p><div class="row-actions"><button class="secondary" data-sendmsg="${m.id}">Deschide WhatsApp</button><button class="danger" data-delmsg="${m.id}">Șterge</button></div></div></article>`).join(''):'<p class="empty">Nu ai mesaje programate.</p>';
+ box.querySelectorAll('[data-sendmsg]').forEach(b=>b.onclick=()=>openScheduledWhatsApp(b.dataset.sendmsg));
+ box.querySelectorAll('[data-delmsg]').forEach(b=>b.onclick=()=>{scheduledMessages=scheduledMessages.filter(x=>x.id!==b.dataset.delmsg);persistMessages()});
+}
+function escapeHtml(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function openScheduledWhatsApp(id){const m=scheduledMessages.find(x=>x.id===id);if(!m)return;window.open('https://wa.me/'+m.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(m.text),'_blank')}
+function checkScheduledMessages(){
+ const now=Date.now();scheduledMessages.forEach(m=>{const t=new Date(m.date+'T'+m.time).getTime();if(t<=now&&!m.notified){m.notified=true;try{if(Notification.permission==='granted')new Notification('Mesaj WhatsApp programat',{body:'Pentru '+m.person+'. Apasă pentru a deschide WhatsApp.',tag:'wa-'+m.id})}catch{};if(!m.notifiedAt)m.notifiedAt=new Date().toISOString();}});
+ localStorage.setItem(MSG_KEY,JSON.stringify(scheduledMessages));renderScheduledMessages();
+}
+document.getElementById('scheduleMsgBtn').addEventListener('click',()=>{
+ const dlg=document.getElementById('messageDialog');document.getElementById('messageForm').reset();document.getElementById('messageId').value='';
+ document.getElementById('messageDate').value=new Date().toISOString().slice(0,10);
+ document.getElementById('messageTime').value='18:00';dlg.showModal();
+});
+document.getElementById('closeMessageDialog').addEventListener('click',()=>document.getElementById('messageDialog').close());
+document.getElementById('messageForm').addEventListener('submit',e=>{
+ e.preventDefault();const phone=document.getElementById('messagePhone').value.trim().replace(/\D/g,'');
+ if(phone.length<8){toast('Introdu un număr WhatsApp valid, cu prefix țară.');return}
+ const m={id:uid(),person:document.getElementById('messagePerson').value.trim(),phone,text:document.getElementById('messageText').value.trim(),date:document.getElementById('messageDate').value,time:document.getElementById('messageTime').value,notified:false};
+ scheduledMessages.push(m);persistMessages();document.getElementById('messageDialog').close();toast('Mesaj programat! La ora aleasă primești notificare.');
+});
+
 function setupPin(){
  $('#pinBtn').addEventListener('click',()=>{const pin=prompt('Setează un PIN de 4-6 cifre:');if(!pin)return;if(!/^\d{4,6}$/.test(pin)){toast('PIN-ul trebuie să aibă 4-6 cifre');return}localStorage.setItem(PIN_KEY,pin);toast('PIN salvat pe acest dispozitiv')});
  if(localStorage.getItem(PIN_KEY)&&!sessionStorage.getItem('pin_ok')){const p=prompt('Introdu PIN-ul Payment Reminder');if(p===localStorage.getItem(PIN_KEY))sessionStorage.setItem('pin_ok','1');else{document.body.innerHTML='<main style="padding:30px;color:white;background:#090d18;min-height:100vh">Acces blocat. Reîncarcă și introdu PIN-ul corect.</main>';}}
@@ -158,4 +187,4 @@ async function sendCloudTestPush(){
 }
 
 if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('service-worker.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
-renderAll();setupPin();checkReminders();
+renderAll();renderScheduledMessages();setupPin();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});
