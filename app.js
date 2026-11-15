@@ -134,7 +134,29 @@ $('#importInput').addEventListener('change',async e=>{const f=e.target.files?.[0
 function getCloudConfig(){return load(CLOUD_CONFIG_KEY,{supabaseUrl:'',supabaseKey:'',vapidPublicKey:''})}
 function cleanCloudConfig(c){return {supabaseUrl:(c.supabaseUrl||'').trim().replace(/\/+$/,''),supabaseKey:(c.supabaseKey||'').trim(),vapidPublicKey:(c.vapidPublicKey||'').trim()}}
 function hasCloudConfig(){const c=cleanCloudConfig(getCloudConfig());return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.supabaseUrl)&&c.supabaseKey.length>20&&c.vapidPublicKey.length>20}
-function updateCloudStatus(){const s=$('#pushCloudStatus');const b=$('#pushCloudBtn');if(!s||!b)return;if(cloud.pushReady){s.textContent='Activ — notificări și cu aplicația închisă';b.textContent='Configurat'}else if(cloud.ready){s.textContent=Notification.permission==='granted'?'Conectat — activează Push':'Conectat — permite notificările';b.textContent='Editează'}else if(hasCloudConfig()){s.textContent='Configurat — conectare în curs';b.textContent='Editează'}else{s.textContent='Neconfigurat';b.textContent='Configurează'}}
+
+function updateCloudStatus(){
+  const s=$('#pushCloudStatus');
+  const b=$('#pushCloudBtn');
+  if(!s||!b)return;
+
+  if(cloud.pushReady){
+    s.textContent='Activ — notificări și cu aplicația închisă';
+    b.textContent='Activat';
+  }else if(cloud.ready){
+    s.textContent=Notification.permission==='granted'
+      ?'Conectat — activează Push'
+      :'Conectat — permite notificările';
+    b.textContent='Activează notificările';
+  }else if(hasCloudConfig()){
+    s.textContent='Configurat — conectare în curs';
+    b.textContent='Activează notificările';
+  }else{
+    s.textContent='Neconfigurat';
+    b.textContent='Configurează';
+  }
+}
+
 function openCloudDialog(){const c=getCloudConfig();$('#cloudSupabaseUrl').value=c.supabaseUrl||'';$('#cloudSupabaseKey').value=c.supabaseKey||'';$('#cloudVapidKey').value=c.vapidPublicKey||'';$('#cloudDialog').showModal()}
 $('#pushCloudBtn').addEventListener('click',openCloudDialog);$('#closeCloudDialog').addEventListener('click',()=>$('#cloudDialog').close());
 $('#cloudForm').addEventListener('submit',async e=>{e.preventDefault();const c=cleanCloudConfig({supabaseUrl:$('#cloudSupabaseUrl').value,supabaseKey:$('#cloudSupabaseKey').value,vapidPublicKey:$('#cloudVapidKey').value});localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(c));cloud.client=null;cloud.user=null;cloud.ready=false;cloud.pushReady=false;$('#cloudDialog').close();updateCloudStatus();const ok=await initCloud({subscribe:Notification.permission==='granted',showErrors:true});if(ok)toast(cloud.pushReady?'Push Cloud este activ':'Supabase conectat. Activează notificările.')});
