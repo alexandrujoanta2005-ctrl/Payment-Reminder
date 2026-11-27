@@ -134,12 +134,37 @@ function setupPin(){
    if(!/^\d{6}$/.test(token)){recoveryMessage.textContent='Codul trebuie să conțină 6 cifre.';recoveryMessage.className='pin-recovery-message error';recoveryOtp.focus();return;}
    setRecoveryBusy(true,'Se verifică codul…');recoveryMessage.textContent='';
    try{
-     const {data:verified,error}=await appClient().auth.verifyOtp({email:recoveryAddress,token,type:'email'});
+     // Nu lăsăm interfața blocată la nesfârșit dacă rețeaua/Supabase nu răspunde.
+     let verifyTimer;
+     let verifyResult;
+     try {
+       verifyResult = await Promise.race([
+         appClient().auth.verifyOtp({email:recoveryAddress,token,type:'email'}),
+         new Promise((_, reject) => {
+           verifyTimer = setTimeout(() => reject(new Error('VERIFY_TIMEOUT')), 15000);
+         })
+       ]);
+     } finally {
+       clearTimeout(verifyTimer);
+     }
+     const {data:verified,error}=verifyResult;
      if(error)throw error;
      if(!verified.user||verified.user.is_anonymous){throw new Error('Nu a fost confirmat un cont valid.');}
-     setAccountUi(verified.user);closeRecovery();
-     $('#newPinInput').value='';$('#confirmPinInput').value='';$('#pinManageDialog').showModal();
-   }catch(err){console.error('PIN recovery verify:',err);recoveryMessage.textContent='Cod incorect sau expirat. Verifică-l și încearcă din nou.';recoveryMessage.className='pin-recovery-message error';setRecoveryBusy(false);recoveryOtp.focus();}
+     setAccountUi(verified.user);
+     closeRecovery();
+     $('#newPinInput').value='';
+     $('#confirmPinInput').value='';
+     $('#pinManageDialog').showModal();
+     setTimeout(()=>$('#newPinInput').focus(),120);
+   }catch(err){
+     console.error('PIN recovery verify:',err);
+     recoveryMessage.textContent=err?.message==='VERIFY_TIMEOUT'
+       ?'Verificarea durează prea mult. Verifică internetul și încearcă din nou.'
+       :'Cod incorect sau expirat. Verifică-l și încearcă din nou.';
+     recoveryMessage.className='pin-recovery-message error';
+     setRecoveryBusy(false);
+     recoveryOtp.focus();
+   }
  });
  $('#pinBtn').addEventListener('click',()=>{$('#newPinInput').value='';$('#confirmPinInput').value='';$('#pinManageDialog').showModal()});
  $('#closePinManage').addEventListener('click',()=>$('#pinManageDialog').close());
