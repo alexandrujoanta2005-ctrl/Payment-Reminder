@@ -10,9 +10,10 @@
   <title>Payment Reminder</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=premium-2" />
+  <link rel="stylesheet" href="styles.css?v=neon-background-1" />
 </head>
 <body>
+  <div id="customBackgroundLayer" aria-hidden="true"></div>
   <section id="accountGate" class="account-gate visible" aria-label="Conectare Payment Reminder">
     <div class="account-panel">
       <div class="pin-brand"><div class="pin-logo">₿</div><span>PAYMENT REMINDER</span></div>
@@ -177,6 +178,19 @@
             <div class="setting-row"><div><b>Permisiunea notificărilor</b><small id="notifStatus">Neactivate</small></div><button id="enableNotifBtn" class="primary">Activează</button></div>
             <div class="push-actions"><button id="testNotifBtn" class="secondary" type="button">Trimite notificare de test</button></div>
             <p class="note">Push pe telefon necesită permisiune, conexiune la internet și configurarea serverului. Pe iPhone, instalează aplicația pe ecranul principal înainte de activare.</p>
+          </section>
+          <section class="settings-extra background-settings" aria-label="Fundal personalizat">
+            <div class="advanced-head"><div><span class="settings-kicker">STILUL TĂU</span><h3>🎨 Fundal personalizat</h3><p>Alege o fotografie sau un videoclip din galerie și personalizează efectul 3D.</p></div><span class="advanced-count">3D</span></div>
+            <div class="background-preview" id="backgroundPreview"><span>Previzualizarea fundalului tău</span></div>
+            <label class="background-file-label">📷 Alege fotografie sau video din galerie
+              <input id="customBackgroundInput" type="file" accept="image/*,video/mp4,video/webm,video/quicktime" />
+            </label>
+            <div class="background-options">
+              <label class="advanced-setting"><span><b>Efect 3D</b><small>Adaugă profunzime și mișcare discretă cardurilor</small></span><label class="switch"><input id="background3dToggle" type="checkbox" checked><i></i></label></label>
+              <label class="background-opacity">Intensitate fundal <input id="backgroundOpacity" type="range" min="10" max="65" value="28"></label>
+            </div>
+            <div class="row-actions"><button id="removeCustomBackground" class="secondary" type="button">Elimină fundalul</button></div>
+            <p class="note">Fotografiile și videoclipurile sunt păstrate local pe acest dispozitiv. Pentru performanță, videoclipurile sunt limitate la 30 MB, iar fotografiile la 12 MB. Video rulează fără sunet și în buclă.</p>
           </section>
           <section class="settings-extra advanced-settings" aria-label="Setări avansate">
             <div class="advanced-head"><div><span class="settings-kicker">CONTROL PERSONAL</span><h3>✦ Setări avansate</h3><p>20 de opțiuni pentru o experiență adaptată stilului tău.</p></div><span class="advanced-count">20</span></div>

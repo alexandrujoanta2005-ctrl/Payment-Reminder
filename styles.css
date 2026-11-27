@@ -270,3 +270,15 @@ html,body{background:radial-gradient(ellipse at 0% 12%,rgba(118,45,255,.28),tran
 @media(prefers-reduced-motion:no-preference){.summary-card,.payment-card,.pro-tools button{transition:transform .22s ease,box-shadow .22s ease}.summary-card:active,.payment-card:active,.pro-tools button:active{transform:scale(.985)}}
 .light-theme .summary-card,.light-theme .payment-card,.light-theme .mini-stat,.light-theme .pro-tools button{background:linear-gradient(145deg,#fff,#edf1ff);color:#172033;border-color:rgba(91,104,151,.2)}
 .light-theme .summary-card.hero{background:linear-gradient(135deg,#7654ed,#4c63c7);color:#fff}.light-theme .summary-card.overdue-summary{background:linear-gradient(135deg,#087d9a,#24547d);color:#fff}
+
+/* Fundal personalizat: fotografie/video și efect de profunzime 3D */
+#customBackgroundLayer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background-position:center;background-size:cover;opacity:var(--custom-bg-opacity,.28);transition:opacity .25s ease,background-image .3s ease}
+#customBackgroundLayer video{width:100%;height:100%;object-fit:cover;display:block}
+.app-shell{position:relative;z-index:1}
+.background-preview{height:126px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(124,92,255,.35),rgba(33,199,168,.2)),radial-gradient(circle at 70% 20%,#7454ff,transparent 45%),#121a30;display:grid;place-items:center;overflow:hidden;color:#e9eaff;font-weight:800;text-align:center;margin:12px 0;background-position:center;background-size:cover}
+.background-file-label{display:block;padding:14px;border:1px dashed rgba(160,139,255,.65);border-radius:14px;text-align:center;background:rgba(124,92,255,.12);color:#e8e4ff;cursor:pointer}
+.background-file-label input{margin-top:10px;padding:8px;background:rgba(0,0,0,.2)}
+.background-options{margin-top:12px}.background-options .advanced-setting{padding:12px 0}.background-opacity{display:flex;align-items:center;gap:12px}.background-opacity input{flex:1;padding:0;accent-color:#8b5cff}
+body.background-3d .summary-card,body.background-3d .payment-card,body.background-3d .friend-card,body.background-3d .history-card,body.background-3d .settings-extra{transform:perspective(900px) translateZ(0);box-shadow:0 16px 38px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.07);transition:transform .25s ease,box-shadow .25s ease}
+body.background-3d .summary-card:active,body.background-3d .payment-card:active{transform:perspective(900px) translateY(-2px) rotateX(1deg) scale(.995)}
+@media(prefers-reduced-motion:reduce){body.background-3d *{transition:none!important}}
