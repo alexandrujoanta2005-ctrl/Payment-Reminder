@@ -326,7 +326,7 @@ async function sendCloudTestPush(){
   }catch(err){console.error(err);toast('Testul Push Cloud a eșuat');return false}
 }
 
-if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('service-worker.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
+if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('./sw.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
 renderAll();renderScheduledMessages();loadPreferences();setupPin();initAppAccount();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});
 
 // ---------- INSTALARE PWA (fără modificări la fluxul de notificări) ----------
