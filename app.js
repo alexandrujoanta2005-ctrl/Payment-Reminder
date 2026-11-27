@@ -70,7 +70,7 @@ document.getElementById('messageForm').addEventListener('submit',e=>{
 
 const PREFS_KEY='payment_reminder_preferences_v1';
 function loadPreferences(){const p=load(PREFS_KEY,{});$('#profileName').value=p.profileName||'';$('#defaultCurrency').value=p.currency||'RON';$('#defaultReminderTime').value=p.reminderTime||'18:00';$('#defaultWaText').value=localStorage.getItem('pr_default_wa_text')||''}
-$('#savePreferences').addEventListener('click',()=>{const p={profileName:$('#profileName').value.trim(),currency:$('#defaultCurrency').value,reminderTime:$('#defaultReminderTime').value||'18:00'};localStorage.setItem(PREFS_KEY,JSON.stringify(p));localStorage.setItem('pr_default_wa_text',$('#defaultWaText').value.trim());toast('Preferințe salvate')});
+$('#savePreferences').addEventListener('click',()=>{const p={profileName:$('#profileName').value.trim(),currency:$('#defaultCurrency').value,reminderTime:$('#defaultReminderTime').value||'18:00'};localStorage.setItem(PREFS_KEY,JSON.stringify(p));localStorage.setItem('pr_default_wa_text',$('#defaultWaText').value.trim());toast('Acceptat — preferințele au fost salvate')});
 $('#resetPreferences').addEventListener('click',()=>{if(!confirm('Resetezi preferințele?'))return;localStorage.removeItem(PREFS_KEY);localStorage.removeItem('pr_default_wa_text');loadPreferences();toast('Preferințe resetate')});
 $('#refreshAppBtn').addEventListener('click',()=>{renderAll();renderScheduledMessages();toast('Date reîmprospătate')});
 $('#clearLocalBtn').addEventListener('click',()=>{if(!confirm('Ștergi toate plățile, istoricul și mesajele programate local? Această acțiune nu poate fi anulată.'))return;state.payments=[];state.history=[];scheduledMessages=[];save({sync:false});persistMessages();localStorage.removeItem(NOTIFIED_KEY);toast('Date locale șterse')});
@@ -114,15 +114,15 @@ async function enableNotifications(){
   toast('Permisiunea este activă');
   if(hasCloudConfig()){
     const ok=await initCloud({subscribe:true,showErrors:true});
-    if(ok&&cloud.pushReady)toast('Notificările în fundal sunt active');
+    if(ok&&cloud.pushReady)toast('Notificările sunt active');
   }else{
-    await sendNotification('Payment Reminder','Notificările locale sunt active. Configurează Push Cloud pentru notificări cu aplicația închisă.');
+    await sendNotification('Payment Reminder','Notificările locale sunt active. Notificările locale sunt active.');
   }
 }
 function updateNotifStatus(){const s=$('#notifStatus');if(!('Notification'in window)){s.textContent='Nesuportate';return}s.textContent=Notification.permission==='granted'?'Permise':Notification.permission==='denied'?'Blocate':'Neactivate'}
 async function sendNotification(title,body){if(Notification.permission!=='granted')return;try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'payment-reminder-local'})}catch{try{new Notification(title,{body})}catch{}}}
 $('#notifBtn').addEventListener('click',enableNotifications);$('#enableNotifBtn').addEventListener('click',enableNotifications);
-$('#testNotifBtn').addEventListener('click',async()=>{if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission!=='granted')return;if(cloud.pushReady){const ok=await sendCloudTestPush();if(ok){toast('Test push trimis prin server');return}}await sendNotification('💰 Test notificare','Funcționează local. Pentru test cu aplicația închisă configurează Push Cloud.')});
+$('#testNotifBtn').addEventListener('click',async()=>{if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission!=='granted')return;if(cloud.pushReady){const ok=await sendCloudTestPush();if(ok){toast('Test push trimis prin server');return}}await sendNotification('💰 Test notificare','Funcționează local. ')});
 
 function checkReminders(){if(Notification.permission!=='granted'||cloud.pushReady)return;const now=Date.now();const notified=load(NOTIFIED_KEY,{});let changed=false;state.payments.forEach(p=>{const t=new Date(`${p.reminderDate}T${p.reminderTime}`).getTime();const key=`${p.id}:${p.reminderDate}:${p.reminderTime}`;if(t<=now&&now-t<6*60*60*1000&&!notified[key]){sendNotification(`💰 ${p.friend} trebuie să-ți dea bani`,`${fmtMoney(p.amount,p.currency)} pentru ${p.service}. Scadență: ${fmtDate(p.dueDate,p.dueTime)}.`);notified[key]=Date.now();changed=true}});if(changed)localStorage.setItem(NOTIFIED_KEY,JSON.stringify(notified))}
 setInterval(checkReminders,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
@@ -135,10 +135,6 @@ function getCloudConfig(){return load(CLOUD_CONFIG_KEY,{supabaseUrl:'',supabaseK
 function cleanCloudConfig(c){return {supabaseUrl:(c.supabaseUrl||'').trim().replace(/\/+$/,''),supabaseKey:(c.supabaseKey||'').trim(),vapidPublicKey:(c.vapidPublicKey||'').trim()}}
 function hasCloudConfig(){const c=cleanCloudConfig(getCloudConfig());return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.supabaseUrl)&&c.supabaseKey.length>20&&c.vapidPublicKey.length>20}
 function updateCloudStatus(){const s=$('#pushCloudStatus');const b=$('#pushCloudBtn');if(!s||!b)return;if(cloud.pushReady){s.textContent='Activ — notificări și cu aplicația închisă';b.textContent='Activat'}else if(cloud.ready){s.textContent=Notification.permission==='granted'?'Conectat — activează Push':'Conectat — permite notificările';b.textContent='Activează'}else if(hasCloudConfig()){s.textContent='Configurat — conectare în curs';b.textContent='Activează'}else{s.textContent='Neconfigurat';b.textContent='Configurează'}}
-function openCloudDialog(){const c=getCloudConfig();$('#cloudSupabaseUrl').value=c.supabaseUrl||'';$('#cloudSupabaseKey').value=c.supabaseKey||'';$('#cloudVapidKey').value=c.vapidPublicKey||'';$('#cloudDialog').showModal()}
-$('#pushCloudBtn').addEventListener('click',openCloudDialog);$('#closeCloudDialog').addEventListener('click',()=>$('#cloudDialog').close());
-$('#cloudForm').addEventListener('submit',async e=>{e.preventDefault();const c=cleanCloudConfig({supabaseUrl:$('#cloudSupabaseUrl').value,supabaseKey:$('#cloudSupabaseKey').value,vapidPublicKey:$('#cloudVapidKey').value});localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(c));cloud.client=null;cloud.user=null;cloud.ready=false;cloud.pushReady=false;$('#cloudDialog').close();updateCloudStatus();const ok=await initCloud({subscribe:Notification.permission==='granted',showErrors:true});if(ok)toast(cloud.pushReady?'Push Cloud este activ':'Supabase conectat. Activează notificările.')});
-$('#clearCloudBtn').addEventListener('click',async()=>{try{if(cloud.client&&cloud.user){const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();if(sub){await cloud.client.from('push_subscriptions').delete().eq('endpoint',sub.endpoint);await sub.unsubscribe()}}}catch{}localStorage.removeItem(CLOUD_CONFIG_KEY);cloud.client=null;cloud.user=null;cloud.ready=false;cloud.pushReady=false;$('#cloudDialog').close();updateCloudStatus();toast('Configurarea Push Cloud a fost ștearsă')});
 
 async function initCloud({subscribe=false,showErrors=false,merge=true}={}){
   if(cloud.busy)return cloud.ready;

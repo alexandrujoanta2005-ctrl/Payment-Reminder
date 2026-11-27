@@ -76,27 +76,12 @@
             <div><b>Notificări</b><small id="notifStatus">Neactivate</small></div>
             <button id="enableNotifBtn" class="secondary">Activează</button>
           </div>
-          <div class="setting-row">
-            <div><b>Push Cloud</b><small id="pushCloudStatus">Neconfigurat</small></div>
-            <button id="pushCloudBtn" class="secondary">Configurează</button>
-          </div>
-          <div class="setting-row">
-            <div><b>Test notificare</b><small>Cu Push Cloud activ, testul vine prin server.</small></div>
-            <button id="testNotifBtn" class="secondary">Testează</button>
-          </div>
-          <div class="setting-row stack">
-            <div><b>Backup local</b><small>Salvează toate abonamentele într-un fișier JSON.</small></div>
-            <div class="row-actions">
-              <button id="exportBtn" class="secondary">Exportă</button>
-              <label class="secondary file-label">Importă<input id="importInput" type="file" accept="application/json" hidden></label>
-            </div>
-          </div>
           <div class="settings-extra">
 <h3>⚙️ Preferințe aplicație</h3>
 <label>Numele aplicației / titular<input id="profileName" maxlength="60" placeholder="Ex: Familia mea"></label>
 <div class="two-col"><label>Monedă implicită<select id="defaultCurrency"><option value="RON">RON</option><option value="EUR">EUR</option><option value="USD">USD</option></select></label><label>Ora implicită reminder<input id="defaultReminderTime" type="time" value="18:00"></label></div>
 <label>Mesaj WhatsApp implicit<textarea id="defaultWaText" rows="3" maxlength="500" placeholder="Salut {nume}, îți reamintesc de {abonament}: {suma}, scadent {data}."></textarea></label>
-<div class="row-actions"><button id="savePreferences" class="primary">Salvează preferințele</button><button id="resetPreferences" class="secondary">Reset</button></div>
+<div class="row-actions"><button id="savePreferences" class="primary">Accept</button><button id="resetPreferences" class="secondary">Reset</button></div>
 <p class="note">Variabile mesaj: {nume}, {abonament}, {suma}, {data}. Se aplică mesajelor WhatsApp generate din plăți.</p>
 </div>
 <div class="settings-extra">
@@ -104,9 +89,7 @@
 <div class="setting-row"><div><b>Reîmprospătare date</b><small>Reafișează plățile și statisticile.</small></div><button id="refreshAppBtn" class="secondary">Reîncarcă</button></div>
 <div class="setting-row"><div><b>Curățare date locale</b><small>Șterge plățile, istoricul și mesajele programate de pe acest dispozitiv.</small></div><button id="clearLocalBtn" class="danger">Șterge date</button></div>
 </div>
-<div class="setting-row"><div><b>Protecție PIN</b><small>Blocare locală la pornire</small></div><button id="pinBtn" class="secondary">Setează PIN</button></div><div class="note"><b>Face ID:</b> PWA nu poate accesa direct Face ID. PIN-ul este protecție locală simplă.</div><div class="note">
-            <b>Notificări cu aplicația închisă:</b> activează Push Cloud o singură dată. Pe iPhone, Payment Reminder trebuie adăugată pe ecranul principal și permisiunea de notificări trebuie acordată din aplicația instalată.
-          </div>
+<div class="setting-row"><div><b>Protecție PIN</b><small>Blocare locală la pornire</small></div><button id="pinBtn" class="secondary">Setează PIN</button></div><div class="note"><b>Face ID:</b> PWA nu poate accesa direct Face ID. PIN-ul este protecție locală simplă.</div>
         </div>
       </section>
     </main>
@@ -161,23 +144,6 @@
 <div class="two-col"><label>Data<input id="messageDate" type="date" required></label><label>Ora<input id="messageTime" type="time" required value="18:00"></label></div>
 <div class="dialog-actions"><button type="submit" class="primary">Salvează programarea</button></div>
 </form></dialog>
-
-  <dialog id="cloudDialog">
-    <form id="cloudForm" method="dialog">
-      <div class="dialog-head">
-        <div><p class="eyebrow">WEB PUSH</p><h2>Push Cloud</h2></div>
-        <button type="button" id="closeCloudDialog" class="icon-btn">✕</button>
-      </div>
-      <p class="dialog-help">Completează cele 3 valori publice din proiectul Supabase dedicat aplicației. Parola bazei de date și service_role NU se pun aici.</p>
-      <label>Supabase Project URL<input id="cloudSupabaseUrl" type="url" required placeholder="https://xxxx.supabase.co" /></label>
-      <label>Publishable key<input id="cloudSupabaseKey" required autocomplete="off" placeholder="sb_publishable_..." /></label>
-      <label>VAPID Public Key<textarea id="cloudVapidKey" required spellcheck="false" placeholder="Cheia publică VAPID"></textarea></label>
-      <div class="dialog-actions split-actions">
-        <button type="button" id="clearCloudBtn" class="danger">Șterge configurarea</button>
-        <button type="submit" class="primary">Salvează și conectează</button>
-      </div>
-    </form>
-  </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
