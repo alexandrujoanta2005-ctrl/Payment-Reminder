@@ -94,55 +94,57 @@ function setupPin(){
  }
  submit.addEventListener('click',unlock);input.addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
 
- // Recuperare PIN: butonul este prezent direct în index.html.
+ // Recuperare PIN prin e-mail: utilizatorul introduce adresa contului.
  const forgotPinButton=$('#pinForgotBtn');
  if(forgotPinButton){
  forgotPinButton.onclick=async(event)=>{
    event.preventDefault();
    if(forgotPinButton.disabled)return;
-   forgotPinButton.disabled=true;
    const oldText=forgotPinButton.textContent;
-   forgotPinButton.textContent='Verific contul…';
+   const emailInput=window.prompt('Introdu adresa de e-mail asociată contului tău:');
+   if(emailInput===null)return;
+   const email=emailInput.trim().toLowerCase();
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+     toast('Introdu o adresă de e-mail validă.');
+     return;
+   }
+   forgotPinButton.disabled=true;
    try{
-     const {data,error}=await getAppSession();
-     if(error)throw error;
-     const user=data.session?.user||null;
-     setAccountUi(user);
-     if(!user||user.is_anonymous||!user.email){
-       toast('Pentru resetarea PIN-ului trebuie să fii conectat cu un cont Google cu e-mail.');
-       return;
-     }
-     const confirmed=window.confirm(`Vom trimite un cod de verificare la ${user.email}. Continui?`);
-     if(!confirmed)return;
-     forgotPinButton.textContent='Se trimite codul…';
-     const {error:sendError}=await appClient().auth.signInWithOtp({
-       email:user.email,
+     forgotPinButton.textContent='Se verifică e-mailul…';
+     const client=appClient();
+     // shouldCreateUser:false împiedică înregistrarea unui cont nou.
+     // Supabase nu trimite OTP pentru o adresă fără cont existent.
+     const {error:sendError}=await client.auth.signInWithOtp({
+       email,
        options:{shouldCreateUser:false}
      });
      if(sendError)throw sendError;
-     const otp=window.prompt(`Introdu codul primit pe e-mailul ${user.email}:`);
+     const otp=window.prompt(`Dacă există un cont asociat adresei ${email}, vei primi un cod. Introdu codul de 6 cifre primit:`);
      if(otp===null)return;
      if(!/^\d{6}$/.test(otp.trim())){
        toast('Cod invalid. Introdu codul de 6 cifre primit pe e-mail.');
        return;
      }
      forgotPinButton.textContent='Se verifică codul…';
-     const {data:verified,error:verifyError}=await appClient().auth.verifyOtp({
-       email:user.email,
+     const {data:verified,error:verifyError}=await client.auth.verifyOtp({
+       email,
        token:otp.trim(),
        type:'email'
      });
      if(verifyError)throw verifyError;
-     if(!verified.user||verified.user.id!==user.id){
-       toast('Codul nu aparține contului conectat. PIN-ul nu a fost modificat.');
+     if(!verified.user||verified.user.is_anonymous){
+       toast('Nu am putut confirma un cont valid pentru această adresă.');
        return;
      }
+     setAccountUi(verified.user);
      $('#newPinInput').value='';
      $('#confirmPinInput').value='';
      $('#pinManageDialog').showModal();
    }catch(err){
      console.error('PIN recovery:',err);
-     toast(err?.message||'Nu am putut verifica autentificarea. Verifică internetul și încearcă din nou.');
+     const message=String(err?.message||'');
+     if(/invalid|expired|token/i.test(message))toast('Cod incorect sau expirat. Cere un cod nou.');
+     else toast('Nu am putut trimite sau verifica acel cod. Verifică adresa și conexiunea, apoi încearcă din nou.');
    }finally{
      forgotPinButton.disabled=false;
      forgotPinButton.textContent=oldText;
@@ -218,17 +220,6 @@ function appClient(){
  if(!appAuthClient)appAuthClient=window.supabase.createClient(APP_SUPABASE_URL,APP_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  return appAuthClient;
 }
-// O singură citire de sesiune partajată între inițializare și recuperarea PIN-ului.
-let appSessionRequest=null;
-function getAppSession(){
- if(!appSessionRequest){
-  appSessionRequest=Promise.race([
-   appClient().auth.getSession(),
-   new Promise((_,reject)=>setTimeout(()=>reject(new Error('Verificarea contului a expirat. Verifică internetul, apoi încearcă din nou.')),12000))
-  ]).finally(()=>{appSessionRequest=null});
- }
- return appSessionRequest;
-}
 function setAccountUi(user){
  appUser=user||null;
  const gate=$('#accountGate');
@@ -287,7 +278,7 @@ async function continueWithGoogle(){
 }
 async function initAppAccount(){
  try{
-  const c=appClient();const {data,error}=await getAppSession();if(error)throw error;
+  const c=appClient();const {data,error}=await c.auth.getSession();if(error)throw error;
   const user=data.session?.user;
   if(!user){setAccountUi(null);return}
   setAccountUi(user);
@@ -393,7 +384,7 @@ async function sendCloudTestPush(){
   }catch(err){console.error(err);toast('Testul Push Cloud a eșuat');return false}
 }
 
-if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('./service-worker.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
+if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('./sw.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
 renderAll();renderScheduledMessages();loadPreferences();setupPin();initAppAccount();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});
 
 // ---------- INSTALARE PWA (fără modificări la fluxul de notificări) ----------
