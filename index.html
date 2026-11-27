@@ -123,7 +123,7 @@
             <div class="download-option">
               <div class="download-option-icon">📲</div>
               <div class="download-option-copy"><b>Profil iPhone</b><small>Instalează profilul care adaugă pictograma Payment Reminder pe ecranul principal.</small></div>
-              <a class="primary download-link" href="Payment-Reminder-iPhone.mobileconfig" download>Descarcă profil</a>
+              <a class="primary download-link" id="downloadIosProfileBtn" href="Payment-Reminder-iPhone.mobileconfig">Descarcă profil Web Clip</a>
             </div>
             <p class="note download-note">Profilul adaugă o pictogramă web care deschide Payment Reminder în mod ecran complet; nu instalează o aplicație iOS nativă și nu este un profil de semnare Apple. După descărcare, deschide Configurări → Profil descărcat → Instalează. Alternativ, folosește Safari → Partajare → Adaugă la ecranul principal.</p>
           </div>
@@ -219,6 +219,31 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"
     onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2.57.4/dist/umd/supabase.js'"></script>
+  <script>
+    // Servește profilul Web Clip cu tipul MIME recunoscut de iOS.
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileLink = document.getElementById('downloadIosProfileBtn');
+      if (!profileLink) return;
+      profileLink.addEventListener('click', async (event) => {
+        event.preventDefault();
+        try {
+          const response = await fetch('Payment-Reminder-iPhone.mobileconfig', { cache: 'no-store' });
+          if (!response.ok) throw new Error('Profilul nu a putut fi descărcat.');
+          const profileBlob = new Blob([await response.arrayBuffer()], { type: 'application/x-apple-aspen-config' });
+          const blobUrl = URL.createObjectURL(profileBlob);
+          const download = document.createElement('a');
+          download.href = blobUrl;
+          download.download = 'Payment-Reminder.mobileconfig';
+          document.body.appendChild(download);
+          download.click();
+          download.remove();
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        } catch (error) {
+          window.location.href = 'Payment-Reminder-iPhone.mobileconfig';
+        }
+      });
+    });
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
