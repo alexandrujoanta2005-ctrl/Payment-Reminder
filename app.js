@@ -320,3 +320,33 @@ async function sendCloudTestPush(){
 
 if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('service-worker.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
 renderAll();renderScheduledMessages();loadPreferences();setupPin();initAppAccount();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});
+
+// ---------- INSTALARE PWA (fără modificări la fluxul de notificări) ----------
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  const btn = document.getElementById('installAppBtn');
+  if (btn) btn.textContent = 'Instalează';
+});
+const installAppButton = document.getElementById('installAppBtn');
+if (installAppButton) installAppButton.addEventListener('click', async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+  } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+    toast('Pe iPhone: deschide în Safari → Partajare → Adaugă la ecranul principal.');
+  } else {
+    toast('În browser, deschide meniul ⋮ și alege „Instalează aplicația” sau „Adaugă la ecranul principal”.');
+  }
+});
+const iosInstallHelpButton = document.getElementById('iosInstallHelpBtn');
+if (iosInstallHelpButton) iosInstallHelpButton.addEventListener('click', () => {
+  toast('Safari: apasă Partajare (pătratul cu săgeată) → Adaugă la ecranul principal → Adaugă.');
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  if (installAppButton) installAppButton.textContent = 'Instalată';
+  toast('Payment Reminder a fost instalată!');
+});

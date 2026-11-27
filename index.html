@@ -107,6 +107,21 @@
       <section id="settingsView" class="view">
         <div class="section-head"><div><h2>Setări</h2><p>Personalizare, securitate și administrarea datelor.</p></div></div>
         <div class="settings-card">
+          <div class="settings-extra download-app-section">
+            <h3>📲 Descarcă aplicația</h3>
+            <p class="download-intro">Instalează Payment Reminder pe telefon pentru acces rapid, direct de pe ecranul principal.</p>
+            <div class="download-option">
+              <div class="download-option-icon">🤖</div>
+              <div class="download-option-copy"><b>Android</b><small>Instalare ca aplicație din browser. APK-ul dedicat va necesita o compilare și semnare separată.</small></div>
+              <button type="button" id="installAppBtn" class="primary">Instalează</button>
+            </div>
+            <div class="download-option">
+              <div class="download-option-icon">🍎</div>
+              <div class="download-option-copy"><b>iPhone / Safari</b><small>Deschide site-ul în Safari, apasă Partajare, apoi „Adaugă la ecranul principal”.</small></div>
+              <button type="button" id="iosInstallHelpBtn" class="secondary">Instrucțiuni</button>
+            </div>
+            <p class="note download-note">Pe iPhone, versiunea web se instalează din Safari. Un profil iPhone (.mobileconfig) nu este necesar și nu poate transforma singur site-ul într-o aplicație nativă.</p>
+          </div>
           <div class="settings-intro"><div class="settings-icon">⚙️</div><div><b>Preferințele tale</b><small>Configurează aplicația exact cum ai nevoie.</small></div></div><div class="settings-extra account-settings">
             <h3>👤 Cont și sincronizare</h3>
             <div class="setting-row"><div><b id="accountLabel">Neconectat</b><small id="accountStatus">Date locale pe acest dispozitiv</small></div><button id="accountActionBtn" class="secondary">Conectare Google</button></div>

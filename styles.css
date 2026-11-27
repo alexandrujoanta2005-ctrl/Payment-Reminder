@@ -71,3 +71,16 @@ body{background:radial-gradient(ellipse at 15% -10%,rgba(109,93,252,.28),transpa
 .account-subtitle{color:#aab4ce;line-height:1.55;font-size:.9rem;margin:0 auto 24px;max-width:310px}
 .account-action{width:100%;min-height:52px;margin:7px 0;font-weight:700}.account-action span{display:inline-grid;place-items:center;background:#fff;color:#4285f4;border-radius:50%;width:23px;height:23px;margin-right:9px;font-weight:900}
 .account-error{min-height:18px;color:#ff8fa2;font-size:.82rem}.account-settings{border-top:1px solid var(--line);margin-top:8px}
+
+
+/* Download / install section */
+.download-app-section{padding-top:15px!important}
+.download-intro{color:var(--muted);font-size:.84rem;line-height:1.5;margin:-3px 0 12px}
+.download-option{display:flex;align-items:center;gap:11px;padding:13px 0;border-top:1px solid var(--line)}
+.download-option-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:14px;background:rgba(109,93,252,.16);font-size:1.3rem}
+.download-option-copy{flex:1;min-width:0}
+.download-option-copy b{display:block;font-size:.92rem}
+.download-option-copy small{display:block;color:var(--muted);font-size:.74rem;line-height:1.4;margin-top:3px}
+.download-option button{white-space:nowrap;padding:10px 12px;font-size:.78rem}
+.download-note{margin-top:10px}
+@media(max-width:390px){.download-option{flex-wrap:wrap}.download-option-copy{min-width:calc(100% - 58px);}.download-option button{margin-left:53px}}
