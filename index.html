@@ -144,15 +144,6 @@
             <div class="push-actions"><button id="testNotifBtn" class="secondary" type="button">Trimite notificare de test</button></div>
             <p class="note">Push pe telefon necesită permisiune, conexiune la internet și configurarea serverului. Pe iPhone, instalează aplicația pe ecranul principal înainte de activare.</p>
           </section>
-          <section class="settings-extra push-cloud-settings">
-            <h3>☁️ Push Cloud — notificări când aplicația este închisă</h3>
-            <p class="note">Folosește același proiect Supabase al aplicației. Cheia VAPID privată nu se introduce aici și nu trebuie publicată.</p>
-            <label>Supabase Project URL<input id="pushSupabaseUrl" type="url" inputmode="url" placeholder="https://proiectul-tau.supabase.co" autocomplete="off"></label>
-            <label>Supabase Publishable key<input id="pushSupabaseKey" type="password" autocomplete="off" placeholder="sb_publishable_..."></label>
-            <label>VAPID Public Key<input id="pushVapidPublicKey" type="text" autocomplete="off" placeholder="Cheia publică VAPID"></label>
-            <div class="setting-row"><div><b id="pushCloudStatus">Neconfigurat</b><small>Starea conexiunii pentru notificări în fundal</small></div><button id="pushCloudBtn" type="button" class="primary">Salvează și conectează</button></div>
-            <p class="note">După conectare, apasă „Activează” la Notificări și acceptă permisiunea. Serverul Supabase și programarea Cron trebuie configurate separat.</p>
-          </section>
           <div class="settings-extra">
 <h3>⚙️ Preferințe aplicație</h3>
 <label>Numele aplicației / titular<input id="profileName" maxlength="60" placeholder="Ex: Familia mea"></label>
@@ -261,6 +252,6 @@
       });
     });
   </script>
-  <script src="app.js?v=fix-20261127"></script>
+  <script src="app.js?v=pin-recovery-4"></script>
 </body>
 </html>
