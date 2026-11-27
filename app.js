@@ -142,7 +142,9 @@ function setupPin(){
      $('#pinManageDialog').showModal();
    }catch(err){
      console.error('PIN recovery:',err);
-     toast('Nu am putut verifica autentificarea. Verifică internetul și încearcă din nou.');
+     const message='Nu am putut verifica autentificarea: '+(err?.message||'verifică internetul și încearcă din nou.');
+     if(pinMessage)pinMessage.textContent=message;
+     toast(message);
    }finally{
      forgotPinButton.disabled=false;
      forgotPinButton.textContent=oldText;
@@ -197,11 +199,11 @@ async function enableNotifications(){
   }
 }
 function updateNotifStatus(){const s=$('#notifStatus');if(!('Notification'in window)){if(s)s.textContent='Nesuportate';return}if(s)s.textContent=Notification.permission==='granted'?'Permise':Notification.permission==='denied'?'Blocate':'Neactivate';const b=$('#pushBadge');if(b){b.textContent=Notification.permission==='granted'?'Permise':'Oprite';b.classList.toggle('on',Notification.permission==='granted')}}
-async function sendNotification(title,body){if(Notification.permission!=='granted')return;try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'payment-reminder-local'})}catch{try{new Notification(title,{body})}catch{}}}
+async function sendNotification(title,body){if(!('Notification' in window)||Notification.permission!=='granted')return;try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'payment-reminder-local'})}catch{try{new Notification(title,{body})}catch{}}}
 $('#notifBtn').addEventListener('click',enableNotifications);$('#enableNotifBtn').addEventListener('click',enableNotifications);
 $('#testNotifBtn')?.addEventListener('click',async()=>{if(!('Notification'in window)){toast('Browserul nu suportă notificări');return}if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission!=='granted')return;if(cloud.pushReady){const ok=await sendCloudTestPush();if(ok){toast('Cererea de test push a fost trimisă');return}}await sendNotification('💰 Payment Reminder','Notificarea de test funcționează pe acest dispozitiv.');toast('Notificare de test afișată local');});
 
-function checkReminders(){if(Notification.permission!=='granted'||cloud.pushReady)return;const now=Date.now();const notified=load(NOTIFIED_KEY,{});let changed=false;state.payments.forEach(p=>{const t=new Date(`${p.reminderDate}T${p.reminderTime}`).getTime();const key=`${p.id}:${p.reminderDate}:${p.reminderTime}`;if(t<=now&&now-t<6*60*60*1000&&!notified[key]){sendNotification(`💰 ${p.friend} trebuie să-ți dea bani`,`${fmtMoney(p.amount,p.currency)} pentru ${p.service}. Scadență: ${fmtDate(p.dueDate,p.dueTime)}.`);notified[key]=Date.now();changed=true}});if(changed)localStorage.setItem(NOTIFIED_KEY,JSON.stringify(notified))}
+function checkReminders(){if(!('Notification' in window)||Notification.permission!=='granted'||cloud.pushReady)return;const now=Date.now();const notified=load(NOTIFIED_KEY,{});let changed=false;state.payments.forEach(p=>{const t=new Date(`${p.reminderDate}T${p.reminderTime}`).getTime();const key=`${p.id}:${p.reminderDate}:${p.reminderTime}`;if(t<=now&&now-t<6*60*60*1000&&!notified[key]){sendNotification(`💰 ${p.friend} trebuie să-ți dea bani`,`${fmtMoney(p.amount,p.currency)} pentru ${p.service}. Scadență: ${fmtDate(p.dueDate,p.dueTime)}.`);notified[key]=Date.now();changed=true}});if(changed)localStorage.setItem(NOTIFIED_KEY,JSON.stringify(notified))}
 setInterval(checkReminders,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
 
 $('#exportBtn')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringify({payments:state.payments,history:state.history,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`payment-reminder-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)});
@@ -325,7 +327,37 @@ if(window.supabase?.createClient){
 function getCloudConfig(){return load(CLOUD_CONFIG_KEY,{supabaseUrl:'',supabaseKey:'',vapidPublicKey:''})}
 function cleanCloudConfig(c){return {supabaseUrl:(c.supabaseUrl||'').trim().replace(/\/+$/,''),supabaseKey:(c.supabaseKey||'').trim(),vapidPublicKey:(c.vapidPublicKey||'').trim()}}
 function hasCloudConfig(){const c=cleanCloudConfig(getCloudConfig());return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.supabaseUrl)&&c.supabaseKey.length>20&&c.vapidPublicKey.length>20}
-function updateCloudStatus(){const s=$('#pushCloudStatus');const b=$('#pushCloudBtn');if(!s||!b)return;if(cloud.pushReady){s.textContent='Activ — notificări și cu aplicația închisă';b.textContent='Activat'}else if(cloud.ready){s.textContent=Notification.permission==='granted'?'Conectat — activează Push':'Conectat — permite notificările';b.textContent='Activează'}else if(hasCloudConfig()){s.textContent='Configurat — conectare în curs';b.textContent='Activează'}else{s.textContent='Neconfigurat';b.textContent='Configurează'}}
+function updateCloudStatus(){const s=$('#pushCloudStatus');const b=$('#pushCloudBtn');if(!s||!b)return;if(cloud.pushReady){s.textContent='Activ — notificări și cu aplicația închisă';b.textContent='Activat'}else if(cloud.ready){s.textContent=('Notification'in window&&Notification.permission==='granted')?'Conectat — activează Push':'Conectat — permite notificările';b.textContent='Activează'}else if(hasCloudConfig()){s.textContent='Configurat — conectare în curs';b.textContent='Activează'}else{s.textContent='Neconfigurat';b.textContent='Configurează'}}
+function loadCloudConfigUi(){
+ const c=cleanCloudConfig(getCloudConfig());
+ const url=$('#pushSupabaseUrl'),key=$('#pushSupabaseKey'),vapid=$('#pushVapidPublicKey');
+ if(url)url.value=c.supabaseUrl;
+ if(key)key.value=c.supabaseKey;
+ if(vapid)vapid.value=c.vapidPublicKey;
+ updateCloudStatus();
+}
+$('#pushCloudBtn')?.addEventListener('click',async()=>{
+ const config=cleanCloudConfig({
+  supabaseUrl:$('#pushSupabaseUrl')?.value||'',
+  supabaseKey:$('#pushSupabaseKey')?.value||'',
+  vapidPublicKey:$('#pushVapidPublicKey')?.value||''
+ });
+ if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(config.supabaseUrl)||config.supabaseKey.length<20||config.vapidPublicKey.length<20){
+  toast('Completează URL-ul Supabase, cheia Publishable și cheia publică VAPID.');
+  return;
+ }
+ localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(config));
+ cloud.ready=false;cloud.pushReady=false;cloud.client=null;cloud.user=null;
+ updateCloudStatus();
+ const button=$('#pushCloudBtn');if(button){button.disabled=true;button.textContent='Se conectează…'}
+ try{
+  const ok=await initCloud({subscribe:('Notification'in window&&Notification.permission==='granted'),showErrors:true});
+  if(ok)toast(cloud.pushReady?'Push Cloud este activ.':'Conectat. Activează permisiunea notificărilor.');
+ }finally{
+  if(button)button.disabled=false;
+  updateCloudStatus();
+ }
+});
 
 async function initCloud({subscribe=false,showErrors=false,merge=true}={}){
   if(cloud.busy)return cloud.ready;
@@ -334,7 +366,7 @@ async function initCloud({subscribe=false,showErrors=false,merge=true}={}){
   cloud.busy=true;
   try{
     const c=cleanCloudConfig(getCloudConfig());
-    if(!cloud.client)cloud.client=window.supabase.createClient(c.supabaseUrl,c.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    if(!cloud.client)cloud.client=window.supabase.createClient(c.supabaseUrl,c.supabaseKey,{auth:{storageKey:'payment-reminder-push-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
     let {data:{session},error}=await cloud.client.auth.getSession();
     if(error)throw error;
     if(!session){const r=await cloud.client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session}
@@ -382,8 +414,8 @@ async function sendCloudTestPush(){
   }catch(err){console.error(err);toast('Testul Push Cloud a eșuat');return false}
 }
 
-if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('./sw.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
-renderAll();renderScheduledMessages();loadPreferences();setupPin();initAppAccount();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});
+if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('./service-worker.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
+loadCloudConfigUi();renderAll();renderScheduledMessages();loadPreferences();setupPin();initAppAccount();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});
 
 // ---------- INSTALARE PWA (fără modificări la fluxul de notificări) ----------
 let deferredInstallPrompt = null;
