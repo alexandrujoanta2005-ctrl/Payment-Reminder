@@ -93,6 +93,43 @@ function setupPin(){
    else{$('#pinGateError').textContent='PIN incorect. Încearcă din nou.';input.value='';input.focus()}
  }
  submit.addEventListener('click',unlock);input.addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
+
+ // Recuperare PIN: permisă numai pentru un cont Google autentificat.
+ let forgotPinButton=$('#pinForgotBtn');
+ if(!forgotPinButton){
+   forgotPinButton=document.createElement('button');
+   forgotPinButton.id='pinForgotBtn';
+   forgotPinButton.type='button';
+   forgotPinButton.className='secondary';
+   forgotPinButton.textContent='Am uitat PIN-ul?';
+   forgotPinButton.style.marginTop='10px';
+   forgotPinButton.style.width='100%';
+   submit.insertAdjacentElement('afterend',forgotPinButton);
+ }
+ forgotPinButton.addEventListener('click',async()=>{
+   forgotPinButton.disabled=true;
+   const oldText=forgotPinButton.textContent;
+   forgotPinButton.textContent='Verific contul…';
+   try{
+     const {data,error}=await appClient().auth.getSession();
+     if(error)throw error;
+     const user=data.session?.user||null;
+     setAccountUi(user);
+     if(!user||user.is_anonymous){
+       toast('Pentru resetarea PIN-ului trebuie să fii conectat cu Google.');
+       return;
+     }
+     $('#newPinInput').value='';
+     $('#confirmPinInput').value='';
+     $('#pinManageDialog').showModal();
+   }catch(err){
+     console.error('PIN recovery:',err);
+     toast('Nu am putut verifica autentificarea. Verifică internetul și încearcă din nou.');
+   }finally{
+     forgotPinButton.disabled=false;
+     forgotPinButton.textContent=oldText;
+   }
+ });
  $('#pinBtn').addEventListener('click',()=>{$('#newPinInput').value='';$('#confirmPinInput').value='';$('#pinManageDialog').showModal()});
  $('#closePinManage').addEventListener('click',()=>$('#pinManageDialog').close());
  $('#pinManageForm').addEventListener('submit',e=>{e.preventDefault();const a=$('#newPinInput').value,b=$('#confirmPinInput').value;if(!/^\d{4,6}$/.test(a)){toast('PIN-ul trebuie să aibă 4–6 cifre');return}if(a!==b){toast('PIN-urile nu coincid');return}localStorage.setItem(PIN_KEY,a);sessionStorage.setItem('pin_ok','1');$('#pinStatus').textContent='Activ — blocare la pornire';$('#pinManageDialog').close();toast('PIN actualizat')});
