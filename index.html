@@ -10,7 +10,7 @@
   <title>Payment Reminder</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=premium-1" />
+  <link rel="stylesheet" href="styles.css?v=premium-2" />
 </head>
 <body>
   <section id="accountGate" class="account-gate visible" aria-label="Conectare Payment Reminder">
@@ -177,6 +177,35 @@
             <div class="push-actions"><button id="testNotifBtn" class="secondary" type="button">Trimite notificare de test</button></div>
             <p class="note">Push pe telefon necesită permisiune, conexiune la internet și configurarea serverului. Pe iPhone, instalează aplicația pe ecranul principal înainte de activare.</p>
           </section>
+          <section class="settings-extra advanced-settings" aria-label="Setări avansate">
+            <div class="advanced-head"><div><span class="settings-kicker">CONTROL PERSONAL</span><h3>✦ Setări avansate</h3><p>20 de opțiuni pentru o experiență adaptată stilului tău.</p></div><span class="advanced-count">20</span></div>
+            <div class="settings-group-title">Experiență și interfață</div>
+            <div class="advanced-setting"><span class="advanced-ico">🌙</span><span><b>Temă întunecată</b><small>Aspect elegant, confortabil seara</small></span><label class="switch"><input type="checkbox" data-pref="darkTheme"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">✨</span><span><b>Animații discrete</b><small>Tranziții fluide în aplicație</small></span><label class="switch"><input type="checkbox" data-pref="animations" checked><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">📐</span><span><b>Vizualizare compactă</b><small>Mai multe informații pe ecran</small></span><label class="switch"><input type="checkbox" data-pref="compact"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🫥</span><span><b>Ascunde sumele</b><small>Protejează valorile când folosești aplicația în public</small></span><label class="switch"><input type="checkbox" data-pref="hideAmounts"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🔔</span><span><b>Sunet interfață</b><small>Feedback sonor pentru acțiuni</small></span><label class="switch"><input type="checkbox" data-pref="uiSounds"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">📳</span><span><b>Feedback tactil</b><small>Vibrație la acțiuni, unde este suportată</small></span><label class="switch"><input type="checkbox" data-pref="haptics"><i></i></label></div>
+            <div class="settings-group-title">Notificări și mementouri</div>
+            <div class="advanced-setting"><span class="advanced-ico">📲</span><span><b>Notificări push</b><small id="prefPushStatus">Verifică permisiunea dispozitivului</small></span><label class="switch"><input type="checkbox" data-pref="pushEnabled" id="prefPushToggle"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">⏰</span><span><b>Alerte pentru scadențe</b><small>Mementouri pentru plățile care se apropie</small></span><label class="switch"><input type="checkbox" data-pref="dueAlerts" checked><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">⚠️</span><span><b>Alerte pentru întârzieri</b><small>Semnalizează plățile depășite</small></span><label class="switch"><input type="checkbox" data-pref="overdueAlerts" checked><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🧪</span><span><b>Notificare de test</b><small>Trimite o alertă pentru verificare</small></span><button class="mini-action" id="advancedTestNotif" type="button">Testează</button></div>
+            <div class="advanced-setting"><span class="advanced-ico">🌙</span><span><b>Program silențios</b><small>Interval în care preferi să nu fii deranjat</small></span><span class="quiet-times"><input type="time" data-pref-value="quietFrom" value="22:00" aria-label="De la"><input type="time" data-pref-value="quietTo" value="08:00" aria-label="Până la"></span></div>
+            <div class="settings-group-title">Organizare și automatizare</div>
+            <div class="advanced-setting"><span class="advanced-ico">📅</span><span><b>Sumar săptămânal</b><small>Preferință pentru un rezumat al plăților</small></span><label class="switch"><input type="checkbox" data-pref="weeklySummary"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🔃</span><span><b>Reîmprospătare la deschidere</b><small>Actualizează informațiile când revii în aplicație</small></span><label class="switch"><input type="checkbox" data-pref="refreshOnOpen" checked><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">💾</span><span><b>Memento backup</b><small>Amintește-ți să exporți periodic datele</small></span><label class="switch"><input type="checkbox" data-pref="backupReminder"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🧾</span><span><b>Confirmare la ștergere</b><small>Cere confirmare înainte de ștergerea unei plăți</small></span><label class="switch"><input type="checkbox" data-pref="confirmDelete" checked><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🔎</span><span><b>Căutare inteligentă</b><small>Păstrează filtrul și căutarea în sesiunea curentă</small></span><label class="switch"><input type="checkbox" data-pref="smartSearch" checked><i></i></label></div>
+            <div class="settings-group-title">Confidențialitate și accesibilitate</div>
+            <div class="advanced-setting"><span class="advanced-ico">🔐</span><span><b>Blocare la revenire</b><small>Solicită protecția PIN după revenirea în aplicație</small></span><label class="switch"><input type="checkbox" data-pref="lockOnReturn"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🛡️</span><span><b>Previzualizări private</b><small>Ascunde detaliile sensibile din notificări</small></span><label class="switch"><input type="checkbox" data-pref="privatePreviews"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🔤</span><span><b>Text mai mare</b><small>Crește lizibilitatea elementelor din setări</small></span><label class="switch"><input type="checkbox" data-pref="largeText"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">♿</span><span><b>Contrast ridicat</b><small>Contururi și text mai ușor de distins</small></span><label class="switch"><input type="checkbox" data-pref="highContrast"><i></i></label></div>
+            <div class="advanced-setting"><span class="advanced-ico">🌐</span><span><b>Limbă aplicație</b><small>Limba disponibilă în această versiune</small></span><strong class="setting-value">Română</strong></div>
+            <p class="note advanced-note">Preferințele sunt salvate pe acest dispozitiv. Unele opțiuni sunt setări de interfață și nu schimbă permisiunile sistemului sau configurarea serverului.</p>
+          </section>
           <div class="settings-extra">
 <h3><span class="settings-section-icon">✦</span> Preferințe aplicație</h3>
 <label>Numele aplicației / titular<input id="profileName" maxlength="60" placeholder="Ex: Familia mea"></label>
@@ -285,6 +314,6 @@
       });
     });
   </script>
-  <script src="app.js?v=premium-1"></script>
+  <script src="app.js?v=premium-2"></script>
 </body>
 </html>

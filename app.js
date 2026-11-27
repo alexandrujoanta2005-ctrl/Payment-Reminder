@@ -205,7 +205,8 @@ async function enableNotifications(){
   if(isIOS()&&!isStandalone()){toast('Pe iPhone: Adaugă aplicația pe ecranul principal, apoi activează notificările');return}
   const p=await Notification.requestPermission();updateNotifStatus();
   if(p!=='granted'){toast('Permisiunea pentru notificări nu a fost acordată');return}
-  toast('Permisiunea este activă');
+  const advancedPrefs=load('payment_reminder_advanced_settings_v1',{});advancedPrefs.pushEnabled=true;localStorage.setItem('payment_reminder_advanced_settings_v1',JSON.stringify(advancedPrefs));
+  toast('Notificările sunt ACTIVE');
   if(hasCloudConfig()){
     const ok=await initCloud({subscribe:true,showErrors:true});
     if(ok&&cloud.pushReady)toast('Notificările sunt active');
@@ -213,9 +214,38 @@ async function enableNotifications(){
     await sendNotification('Payment Reminder','Notificările locale sunt active. Notificările locale sunt active.');
   }
 }
-function updateNotifStatus(){const s=$('#notifStatus');if(!('Notification'in window)){if(s)s.textContent='Nesuportate';return}if(s)s.textContent=Notification.permission==='granted'?'Permise':Notification.permission==='denied'?'Blocate':'Neactivate';const b=$('#pushBadge');if(b){b.textContent=Notification.permission==='granted'?'Permise':'Oprite';b.classList.toggle('on',Notification.permission==='granted')}}
+function updateNotifStatus(){
+ const supported='Notification'in window, granted=supported&&Notification.permission==='granted';
+ const status=!supported?'Nesuportate':granted?'Active':Notification.permission==='denied'?'Blocate':'Neactivate';
+ const s=$('#notifStatus');if(s)s.textContent=status;
+ const b=$('#pushBadge');if(b){b.textContent=granted?'Active':status;b.classList.toggle('on',granted)}
+ const btn=$('#enableNotifBtn');if(btn){btn.textContent=granted?'Active':'Activează';btn.classList.toggle('is-active',granted);btn.disabled=granted}
+ const prefStatus=$('#prefPushStatus');if(prefStatus)prefStatus.textContent=status;
+ const toggle=$('#prefPushToggle');if(toggle){toggle.checked=granted;toggle.disabled=!supported||Notification.permission==='denied'}
+}
+
 async function sendNotification(title,body){if(Notification.permission!=='granted')return;try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'payment-reminder-local'})}catch{try{new Notification(title,{body})}catch{}}}
 $('#notifBtn').addEventListener('click',enableNotifications);$('#enableNotifBtn').addEventListener('click',enableNotifications);
+
+// Setări avansate: 20 de preferințe salvate local.
+const ADVANCED_PREFS_KEY='payment_reminder_advanced_settings_v1';
+function initAdvancedSettings(){
+ const prefs=load(ADVANCED_PREFS_KEY,{});
+ $$('[data-pref]').forEach(input=>{const key=input.dataset.pref;if(key==='darkTheme'){input.checked=document.body.classList.contains('light-theme')?false:(prefs.darkTheme??true)}else if(key==='pushEnabled'){input.checked=typeof Notification!=='undefined'&&Notification.permission==='granted'}else input.checked=typeof prefs[key]==='boolean'?prefs[key]:input.checked});
+ $$('[data-pref-value]').forEach(input=>{if(prefs[input.dataset.prefValue])input.value=prefs[input.dataset.prefValue]});
+ updateNotifStatus();
+}
+function saveAdvancedPref(key,value){const prefs=load(ADVANCED_PREFS_KEY,{});prefs[key]=value;localStorage.setItem(ADVANCED_PREFS_KEY,JSON.stringify(prefs));}
+document.querySelectorAll('[data-pref]').forEach(input=>input.addEventListener('change',()=>{
+ const key=input.dataset.pref;
+ if(key==='pushEnabled'){if(input.checked){enableNotifications()}else{toast('Pentru oprire, dezactivează permisiunea din setările browserului/dispozitivului.');updateNotifStatus()}return}
+ if(key==='darkTheme'){const light=!input.checked;document.body.classList.toggle('light-theme',light);localStorage.setItem(THEME_KEY,light?'light':'dark');const themeBtn=$('#themeBtn');if(themeBtn)themeBtn.textContent=light?'🌙 Temă întunecată':'☀️ Temă luminoasă'}
+ saveAdvancedPref(key,input.checked);toast('Setare salvată');
+}));
+document.querySelectorAll('[data-pref-value]').forEach(input=>input.addEventListener('change',()=>{saveAdvancedPref(input.dataset.prefValue,input.value);toast('Program silențios salvat')}));
+$('#advancedTestNotif')?.addEventListener('click',async()=>{if(typeof Notification==='undefined'){toast('Notificările nu sunt suportate');return}if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission==='granted'){await sendNotification('Payment Reminder','Totul funcționează! Notificările sunt ACTIVE.');toast('Notificare de test trimisă')}});
+initAdvancedSettings();
+
 $('#testNotifBtn')?.addEventListener('click',async()=>{if(!('Notification'in window)){toast('Browserul nu suportă notificări');return}if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission!=='granted')return;if(cloud.pushReady){const ok=await sendCloudTestPush();if(ok){toast('Cererea de test push a fost trimisă');return}}await sendNotification('💰 Payment Reminder','Notificarea de test funcționează pe acest dispozitiv.');toast('Notificare de test afișată local');});
 
 function checkReminders(){if(Notification.permission!=='granted'||cloud.pushReady)return;const now=Date.now();const notified=load(NOTIFIED_KEY,{});let changed=false;state.payments.forEach(p=>{const t=new Date(`${p.reminderDate}T${p.reminderTime}`).getTime();const key=`${p.id}:${p.reminderDate}:${p.reminderTime}`;if(t<=now&&now-t<6*60*60*1000&&!notified[key]){sendNotification(`💰 ${p.friend} trebuie să-ți dea bani`,`${fmtMoney(p.amount,p.currency)} pentru ${p.service}. Scadență: ${fmtDate(p.dueDate,p.dueTime)}.`);notified[key]=Date.now();changed=true}});if(changed)localStorage.setItem(NOTIFIED_KEY,JSON.stringify(notified))}
