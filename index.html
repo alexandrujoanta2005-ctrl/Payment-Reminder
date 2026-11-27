@@ -10,7 +10,7 @@
   <title>Payment Reminder</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=premium-1" />
 </head>
 <body>
   <section id="accountGate" class="account-gate visible" aria-label="Conectare Payment Reminder">
@@ -127,7 +127,20 @@
 
       <section id="settingsView" class="view">
         <div class="section-head"><div><h2>Setări</h2><p>Personalizare, securitate și administrarea datelor.</p></div></div>
-        <div class="settings-card">
+        <div class="settings-card settings-card-pro">
+          <section class="settings-overview" aria-label="Prezentare setări">
+            <div class="settings-overview-copy">
+              <span class="settings-kicker">CENTRUL TĂU DE CONTROL</span>
+              <h3>Totul, exact cum îți place.</h3>
+              <p>Personalizează experiența, protejează-ți contul și păstrează datele sub control.</p>
+            </div>
+            <div class="settings-orbit" aria-hidden="true"><span>✦</span></div>
+          </section>
+          <div class="settings-shortcuts" aria-label="Categorii de setări">
+            <div class="settings-shortcut"><span class="shortcut-icon purple">◈</span><div><b>Personalizare</b><small>Preferințe și monedă</small></div></div>
+            <div class="settings-shortcut"><span class="shortcut-icon teal">⌑</span><div><b>Securitate</b><small>PIN și protecție</small></div></div>
+            <div class="settings-shortcut"><span class="shortcut-icon blue">⇧</span><div><b>Datele tale</b><small>Backup și sincronizare</small></div></div>
+          </div>
           <div class="settings-extra download-app-section">
             <h3>📲 Descarcă aplicația</h3>
             <p class="download-intro">Instalează Payment Reminder pe telefon pentru acces rapid, direct de pe ecranul principal.</p>
@@ -165,7 +178,7 @@
             <p class="note">Push pe telefon necesită permisiune, conexiune la internet și configurarea serverului. Pe iPhone, instalează aplicația pe ecranul principal înainte de activare.</p>
           </section>
           <div class="settings-extra">
-<h3>⚙️ Preferințe aplicație</h3>
+<h3><span class="settings-section-icon">✦</span> Preferințe aplicație</h3>
 <label>Numele aplicației / titular<input id="profileName" maxlength="60" placeholder="Ex: Familia mea"></label>
 <div class="two-col"><label>Monedă implicită<select id="defaultCurrency"><option value="RON">RON</option><option value="EUR">EUR</option><option value="USD">USD</option></select></label><label>Ora implicită reminder<input id="defaultReminderTime" type="time" value="18:00"></label></div>
 <label>Mesaj WhatsApp implicit<textarea id="defaultWaText" rows="3" maxlength="500" placeholder="Salut {nume}, îți reamintesc de {abonament}: {suma}, scadent {data}."></textarea></label>
@@ -173,18 +186,18 @@
 <p class="note">Variabile mesaj: {nume}, {abonament}, {suma}, {data}. Se aplică mesajelor WhatsApp generate din plăți.</p>
 </div>
 <div class="settings-extra">
-<h3>🧰 Instrumente</h3>
+<h3><span class="settings-section-icon">⌘</span> Instrumente</h3>
 <div class="setting-row"><div><b>Reîmprospătare date</b><small>Reafișează plățile și statisticile.</small></div><button id="refreshAppBtn" class="secondary">Reîncarcă</button></div>
 <div class="setting-row"><div><b>Curățare date locale</b><small>Șterge plățile, istoricul și mesajele programate de pe acest dispozitiv.</small></div><button id="clearLocalBtn" class="danger">Șterge date</button></div>
 </div>
 <div class="setting-row"><div><b>Protecție PIN</b><small id="pinStatus">Blocare locală la pornire</small></div><button id="pinBtn" class="secondary">Gestionează PIN</button></div><div class="note"><b>Siguranță:</b> PIN-ul protejează accesul în aplicație pe acest dispozitiv. Pentru backup, exportă periodic datele.</div>
           <div class="settings-extra">
-            <h3>💾 Backup și date</h3>
+            <h3><span class="settings-section-icon">⇧</span> Backup și date</h3>
             <div class="setting-row"><div><b>Exportă backup</b><small>Descarcă o copie a plăților, istoricului și preferințelor.</small></div><button id="exportBackupBtn" class="secondary">Exportă</button></div>
             <div class="setting-row"><div><b>Importă backup</b><small>Restaurează date dintr-un fișier JSON exportat anterior.</small></div><label class="secondary file-label">Importă<input id="importBackupInput" type="file" accept="application/json,.json" hidden></label></div>
           </div>
           <div class="settings-extra">
-            <h3>ℹ️ Despre aplicație</h3>
+            <h3><span class="settings-section-icon">ⓘ</span> Despre aplicație</h3>
             <div class="about-row"><span>Versiune</span><b>2.0 Modern</b></div>
             <div class="about-row"><span>Stocare</span><b>Local pe dispozitiv</b></div>
             <div class="about-row"><span>Notificări</span><b>Locale, dacă sunt permise</b></div>
@@ -272,6 +285,6 @@
       });
     });
   </script>
-  <script src="app.js?v=pin-email-recovery-4"></script>
+  <script src="app.js?v=premium-1"></script>
 </body>
 </html>
