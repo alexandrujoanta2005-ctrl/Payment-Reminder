@@ -11,7 +11,7 @@
 	<key>PayloadUUID</key>
 	<string>F93DCFA1-F80B-481D-82BF-4BEB15E5B4B3</string>
 	<key>PayloadDisplayName</key>
-	<string>Payment Reminder</string>
+	<string>Payment Reminder</string>
 	<key>PayloadDescription</key>
 	<string>Instalează pictograma Payment Reminder pe ecranul principal al iPhone-ului.</string>
 	<key>PayloadOrganization</key>
@@ -30,9 +30,9 @@
 			<key>PayloadUUID</key>
 			<string>0CFC3D4A-54BD-4B69-A46F-1BC16A32F210</string>
 			<key>PayloadDisplayName</key>
-			<string>Payment Reminder</string>
+			<string>Payment Reminder</string>
 			<key>Label</key>
-			<string>Payment Reminder</string>
+			<string>Payment Reminder</string>
 			<key>URL</key>
 			<string>https://alexandrujoanta2005-ctrl.github.io/Payment-Reminder/</string>
 			<key>IsRemovable</key>
