@@ -38,6 +38,7 @@
       <input id="pinGateInput" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••" aria-label="PIN">
       <p id="pinGateError" class="pin-error" aria-live="polite"></p>
       <button id="pinGateSubmit" class="primary pin-submit">Continuă <span>→</span></button>
+      <button id="pinBioGateBtn" type="button" class="secondary" style="margin-top:10px;width:100%;display:none">Deblocare biometrică</button>
       <button id="pinForgotBtn" type="button" class="secondary" style="margin-top:10px;width:100%">Am uitat PIN-ul?</button>
       <small class="pin-foot">GESTIONEAZĂ PLĂȚILE SIMPLU ȘI RAPID</small>
     </div>
@@ -182,9 +183,12 @@
           <section class="settings-extra background-settings" aria-label="Fundal personalizat">
             <div class="advanced-head"><div><span class="settings-kicker">STILUL TĂU</span><h3>🎨 Fundal personalizat</h3><p>Alege o fotografie sau un videoclip din galerie și personalizează efectul 3D.</p></div><span class="advanced-count">3D</span></div>
             <div class="background-preview" id="backgroundPreview"><span>Previzualizarea fundalului tău</span></div>
+            <div class="wallpaper-heading"><b>✨ 20 de fundaluri premium</b><small>Atinge un model pentru a-l aplica instant.</small></div>
+            <div class="wallpaper-grid" id="wallpaperGrid" aria-label="Fundaluri predefinite"></div>
             <label class="background-file-label">📷 Alege fotografie sau video din galerie
               <input id="customBackgroundInput" type="file" accept="image/*,video/mp4,video/webm,video/quicktime" />
             </label>
+            <div class="font-size-control"><div><b>🔠 Mărime text</b><strong id="fontSizeValue">16 px</strong></div><input id="appFontSize" type="range" min="14" max="30" step="1" value="16" /><small>Reglează textul aplicației între 14 și 30 px.</small></div>
             <div class="background-options">
               <label class="advanced-setting"><span><b>Efect 3D</b><small>Adaugă profunzime și mișcare discretă cardurilor</small></span><label class="switch"><input id="background3dToggle" type="checkbox" checked><i></i></label></label>
               <label class="background-opacity">Intensitate fundal <input id="backgroundOpacity" type="range" min="10" max="65" value="28"></label>
@@ -234,7 +238,12 @@
 <div class="setting-row"><div><b>Reîmprospătare date</b><small>Reafișează plățile și statisticile.</small></div><button id="refreshAppBtn" class="secondary">Reîncarcă</button></div>
 <div class="setting-row"><div><b>Curățare date locale</b><small>Șterge plățile, istoricul și mesajele programate de pe acest dispozitiv.</small></div><button id="clearLocalBtn" class="danger">Șterge date</button></div>
 </div>
-<div class="setting-row"><div><b>Protecție PIN</b><small id="pinStatus">Blocare locală la pornire</small></div><button id="pinBtn" class="secondary">Gestionează PIN</button></div><div class="note"><b>Siguranță:</b> PIN-ul protejează accesul în aplicație pe acest dispozitiv. Pentru backup, exportă periodic datele.</div>
+<div class="setting-row"><div><b>Protecție PIN</b><small id="pinStatus">Blocare locală la pornire</small></div><button id="pinBtn" class="secondary">Gestionează PIN</button></div>
+<section class="settings-extra biometric-card" aria-label="Deblocare biometrică">
+  <div class="advanced-head"><div><span class="settings-kicker">ACCES RAPID</span><h3>Deblocare biometrică</h3><p>Folosește autentificarea dispozitivului: Face ID pe dispozitive compatibile, amprentă sau PIN-ul dispozitivului.</p></div><span class="advanced-count">BIO</span></div>
+  <div class="setting-row"><div><b id="bioStatus">Biometrie neconfigurată</b><small id="bioHint">Disponibilă pe HTTPS și dispozitive compatibile.</small></div><button id="bioToggleBtn" class="secondary">Activează</button></div>
+  <p class="note">Browserul afișează metoda acceptată de sistem. Face ID nu poate fi impus dacă dispozitivul nu îl oferă. PIN-ul aplicației rămâne alternativă. Această funcție folosește WebAuthn pe dispozitiv; nu înlocuiește verificarea autentificării pe server.</p>
+</section><div class="note"><b>Siguranță:</b> PIN-ul protejează accesul în aplicație pe acest dispozitiv. Pentru backup, exportă periodic datele.</div>
           <div class="settings-extra">
             <h3><span class="settings-section-icon">⇧</span> Backup și date</h3>
             <div class="setting-row"><div><b>Exportă backup</b><small>Descarcă o copie a plăților, istoricului și preferințelor.</small></div><button id="exportBackupBtn" class="secondary">Exportă</button></div>

@@ -47,3 +47,12 @@ PAYMENT REMINDER PRO – funcții adăugate
 6. Încarcă fișierele din arhivă în repository-ul GitHub Pages.
 
 Sincronizarea completă a datelor aplicației folosește tabelul user_app_data și RLS, astfel fiecare cont poate citi și modifica doar propriul rând. Datele utilizatorilor fără cont rămân locale; Supabase creează o sesiune anonimă pentru fluxul de acces, dar nu sincronizează datele anonime între dispozitive.
+
+
+DEBLOCARE BIOMETRICĂ (Face ID / amprentă / autentificarea dispozitivului)
+- Deschide aplicația prin HTTPS, pe un dispozitiv și browser compatibil.
+- Intră în Setări > Deblocare biometrică > Activează și confirmă în fereastra sistemului.
+- La următoarea blocare, butonul „Deblocare biometrică” apare pe ecranul PIN.
+- Sistemul decide metoda disponibilă: Face ID, amprentă sau PIN/parola dispozitivului. Aplicația nu poate forța Face ID pe toate dispozitivele.
+- PIN-ul aplicației rămâne alternativă.
+- Implementarea folosește WebAuthn local pentru confortul deblocării. Verificarea criptografică a autentificării pe server nu este configurată în acest pachet; nu considera această opțiune un substitut pentru autentificarea server-side.

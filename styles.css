@@ -282,3 +282,23 @@ html,body{background:radial-gradient(ellipse at 0% 12%,rgba(118,45,255,.28),tran
 body.background-3d .summary-card,body.background-3d .payment-card,body.background-3d .friend-card,body.background-3d .history-card,body.background-3d .settings-extra{transform:perspective(900px) translateZ(0);box-shadow:0 16px 38px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.07);transition:transform .25s ease,box-shadow .25s ease}
 body.background-3d .summary-card:active,body.background-3d .payment-card:active{transform:perspective(900px) translateY(-2px) rotateX(1deg) scale(.995)}
 @media(prefers-reduced-motion:reduce){body.background-3d *{transition:none!important}}
+
+/* Galerie de 20 fundaluri și scalare tipografică personalizată */
+:root{--app-font-size:16px}
+html{font-size:var(--app-font-size,16px)}
+.wallpaper-heading{display:flex;flex-direction:column;gap:4px;margin:16px 0 9px}.wallpaper-heading b{font-size:.96rem}.wallpaper-heading small,.font-size-control small{color:var(--muted);font-size:.76rem}
+.wallpaper-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0 14px}
+.wallpaper-swatch{position:relative;min-width:0;height:68px;border:2px solid rgba(255,255,255,.13);border-radius:14px;background-size:cover;background-position:center;overflow:hidden;box-shadow:inset 0 0 22px rgba(0,0,0,.18);cursor:pointer}
+.wallpaper-swatch span{position:absolute;right:6px;bottom:5px;padding:2px 6px;border-radius:7px;background:rgba(0,0,0,.42);color:white;font-size:.65rem;font-weight:850}
+.wallpaper-swatch.selected{border-color:#b69cff;box-shadow:0 0 0 2px rgba(139,92,246,.3),0 0 20px rgba(139,92,246,.3)}
+.font-size-control{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(124,92,255,.08)}
+.font-size-control>div{display:flex;justify-content:space-between;align-items:center;gap:10px}.font-size-control strong{color:#c4b5fd;font-variant-numeric:tabular-nums}.font-size-control input{display:block;width:100%;margin:12px 0 6px;accent-color:#956bff}
+@media(max-width:380px){.wallpaper-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.wallpaper-swatch{height:58px}}
+
+/* Deblocare biometrică */
+.biometric-card{border:1px solid rgba(139,92,246,.34);background:linear-gradient(145deg,rgba(65,42,110,.25),rgba(17,29,53,.8));border-radius:20px;padding:16px;margin-top:14px}
+.biometric-card .advanced-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.biometric-card .advanced-head h3{margin:5px 0;font-size:1.04rem}
+.biometric-card .advanced-head p{margin:5px 0;color:var(--muted);font-size:.82rem;line-height:1.5}
+.biometric-card .note{font-size:.75rem;line-height:1.55}
+#pinBioGateBtn{border:1px solid rgba(164,132,255,.55);background:linear-gradient(120deg,rgba(126,65,255,.2),rgba(34,190,190,.12))}

@@ -17,6 +17,22 @@ function isOverdue(p){return new Date(`${p.dueDate}T${p.dueTime}`)<new Date()}
 function totalByCurrency(items){const map={};items.forEach(p=>map[p.currency]=(map[p.currency]||0)+Number(p.amount||0));return Object.entries(map).map(([c,v])=>fmtMoney(v,c)).join(' + ')||'0 lei'}
 
 const PIN_KEY='payment_reminder_pin_v1', THEME_KEY='payment_reminder_theme_v1';
+const BIO_KEY='payment_reminder_biometric_credential_v1';
+const b64url=bytes=>btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const fromB64url=value=>Uint8Array.from(atob(value.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+function biometricAvailable(){return !!(window.isSecureContext&&window.PublicKeyCredential&&navigator.credentials);}
+async function registerBiometric(){
+ if(!biometricAvailable())throw new Error('Biometria necesită HTTPS și un browser compatibil.');
+ if(!PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable||!await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())throw new Error('Dispozitivul nu oferă autentificare biometrică/platformă compatibilă.');
+ const credential=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'Payment Reminder',id:location.hostname},user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'payment-reminder-user',displayName:'Payment Reminder'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',residentKey:'preferred',userVerification:'required'},timeout:60000,attestation:'none'}});
+ if(!credential)throw new Error('Înregistrarea biometrică a fost anulată.');
+ localStorage.setItem(BIO_KEY,JSON.stringify({id:b64url(credential.rawId),createdAt:new Date().toISOString()}));
+}
+async function authenticateBiometric(){
+ const saved=load(BIO_KEY,null);if(!saved?.id)throw new Error('Configurează mai întâi deblocarea biometrică din Setări.');
+ const assertion=await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rpId:location.hostname,allowCredentials:[{type:'public-key',id:fromB64url(saved.id)}],userVerification:'required',timeout:60000}});
+ if(!assertion)throw new Error('Autentificarea biometrică a fost anulată.');
+}
 function renderPro(){
  const now=new Date(), m=now.getMonth(), y=now.getFullYear();
  const month=state.payments.filter(p=>{const d=new Date(p.dueDate+'T12:00:00');return d.getMonth()===m&&d.getFullYear()===y});
@@ -93,6 +109,22 @@ function setupPin(){
    else{$('#pinGateError').textContent='PIN incorect. Încearcă din nou.';input.value='';input.focus()}
  }
  submit.addEventListener('click',unlock);input.addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
+ const bioGate=$('#pinBioGateBtn'),bioToggle=$('#bioToggleBtn'),bioStatus=$('#bioStatus'),bioHint=$('#bioHint');
+ const updateBioUi=()=>{const enabled=!!load(BIO_KEY,null);if(bioStatus)bioStatus.textContent=enabled?'Deblocare biometrică activă':'Biometrie neconfigurată';if(bioToggle)bioToggle.textContent=enabled?'Dezactivează':'Activează';if(bioGate)bioGate.style.display=enabled?'block':'none';if(bioHint)bioHint.textContent=enabled?'Poți folosi biometria la ecranul de blocare.':'Disponibilă pe HTTPS și dispozitive compatibile.';};
+ updateBioUi();
+ if(bioToggle)bioToggle.addEventListener('click',async()=>{
+  if(load(BIO_KEY,null)){if(!confirm('Dezactivezi deblocarea biometrică pe acest dispozitiv?'))return;localStorage.removeItem(BIO_KEY);updateBioUi();toast('Deblocarea biometrică a fost dezactivată');return;}
+  bioToggle.disabled=true;bioToggle.textContent='Se configurează…';
+  try{await registerBiometric();updateBioUi();toast('Autentificarea dispozitivului a fost configurată');}
+  catch(err){console.error('Biometric registration:',err);toast(err?.message||'Nu s-a putut configura biometria');}
+  finally{bioToggle.disabled=false;updateBioUi();}
+ });
+ if(bioGate)bioGate.addEventListener('click',async()=>{
+  bioGate.disabled=true;bioGate.textContent='Se verifică…';
+  try{await authenticateBiometric();sessionStorage.setItem('pin_ok','1');gate.classList.remove('visible');$('#pinGateError').textContent='';input.value='';}
+  catch(err){console.error('Biometric unlock:',err);$('#pinGateError').textContent=err?.name==='NotAllowedError'?'Autentificarea a fost anulată sau nu a reușit.':(err?.message||'Deblocarea biometrică nu a reușit.');}
+  finally{bioGate.disabled=false;bioGate.textContent='Deblocare biometrică';}
+ });
 
  // Recuperare PIN printr-o fereastră proprie, optimizată pentru mobil.
  const forgotPinButton=$('#pinForgotBtn');
@@ -235,8 +267,8 @@ function backgroundDb(){return new Promise((resolve,reject)=>{const req=indexedD
 async function backgroundMedia(action,value){const db=await backgroundDb();return new Promise((resolve,reject)=>{const tx=db.transaction('media','readwrite'),store=tx.objectStore('media');let req;if(action==='get')req=store.get('background');else if(action==='set')req=store.put(value,'background');else req=store.delete('background');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);tx.oncomplete=()=>db.close();tx.onerror=()=>reject(tx.error)})}
 function showBackgroundMedia(item){const layer=$('#customBackgroundLayer'),preview=$('#backgroundPreview');if(customBackgroundUrl)URL.revokeObjectURL(customBackgroundUrl);customBackgroundUrl=null;layer.replaceChildren();layer.style.backgroundImage='none';if(!item){preview.style.backgroundImage='';preview.innerHTML='<span>Previzualizarea fundalului tău</span>';return}customBackgroundUrl=URL.createObjectURL(item.blob);if(item.kind==='video'){const v=document.createElement('video');v.src=customBackgroundUrl;v.autoplay=true;v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('aria-hidden','true');layer.append(v);v.play().catch(()=>{});preview.innerHTML='<span>▶ Video personalizat activ</span>'}else{layer.style.backgroundImage=`url("${customBackgroundUrl}")`;preview.style.backgroundImage=`linear-gradient(rgba(8,12,25,.18),rgba(8,12,25,.18)),url("${customBackgroundUrl}")`;preview.innerHTML='<span>Fotografie personalizată</span>'}}
 async function initCustomBackground(){const prefs=load(ADVANCED_PREFS_KEY,{});$('#background3dToggle').checked=prefs.background3d!==false;$('#backgroundOpacity').value=prefs.backgroundOpacity??28;document.body.classList.toggle('background-3d',prefs.background3d!==false);document.documentElement.style.setProperty('--custom-bg-opacity',`${(prefs.backgroundOpacity??28)/100}`);try{showBackgroundMedia(await backgroundMedia('get'))}catch(err){console.warn('Fundal personalizat indisponibil',err)}}
-$('#customBackgroundInput')?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const video=file.type.startsWith('video/'),limit=video?30*1024*1024:12*1024*1024;if(!(video||file.type.startsWith('image/'))){toast('Alege o fotografie sau un videoclip');e.target.value='';return}if(file.size>limit){toast(video?'Videoclipul trebuie să aibă maximum 30 MB':'Fotografia trebuie să aibă maximum 12 MB');e.target.value='';return}try{const item={blob:file,kind:video?'video':'image',name:file.name};await backgroundMedia('set',item);showBackgroundMedia(item);toast('Fundalul personalizat a fost activat')}catch(err){console.error(err);toast('Nu am putut salva fișierul. Verifică spațiul disponibil.')}e.target.value=''});
-$('#removeCustomBackground')?.addEventListener('click',async()=>{try{await backgroundMedia('delete');showBackgroundMedia(null);toast('Fundalul personalizat a fost eliminat')}catch{toast('Nu am putut elimina fundalul')}});
+$('#customBackgroundInput')?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const video=file.type.startsWith('video/'),limit=video?30*1024*1024:12*1024*1024;if(!(video||file.type.startsWith('image/'))){toast('Alege o fotografie sau un videoclip');e.target.value='';return}if(file.size>limit){toast(video?'Videoclipul trebuie să aibă maximum 30 MB':'Fotografia trebuie să aibă maximum 12 MB');e.target.value='';return}try{const item={blob:file,kind:video?'video':'image',name:file.name};await backgroundMedia('set',item);const pref=load(ADVANCED_PREFS_KEY,{});pref.customWallpaper=true;localStorage.setItem(ADVANCED_PREFS_KEY,JSON.stringify(pref));$$('.wallpaper-swatch').forEach(b=>b.classList.remove('selected'));showBackgroundMedia(item);toast('Fundalul personalizat a fost activat')}catch(err){console.error(err);toast('Nu am putut salva fișierul. Verifică spațiul disponibil.')}e.target.value=''});
+$('#removeCustomBackground')?.addEventListener('click',async()=>{try{await backgroundMedia('delete');const pref=load(ADVANCED_PREFS_KEY,{});pref.customWallpaper=false;delete pref.wallpaperIndex;localStorage.setItem(ADVANCED_PREFS_KEY,JSON.stringify(pref));showBackgroundMedia(null);toast('Fundalul personalizat a fost eliminat')}catch{toast('Nu am putut elimina fundalul')}});
 $('#background3dToggle')?.addEventListener('change',e=>{const p=load(ADVANCED_PREFS_KEY,{});p.background3d=e.target.checked;localStorage.setItem(ADVANCED_PREFS_KEY,JSON.stringify(p));document.body.classList.toggle('background-3d',e.target.checked);toast(e.target.checked?'Efectul 3D este activ':'Efectul 3D este dezactivat')});
 $('#backgroundOpacity')?.addEventListener('input',e=>{const value=Number(e.target.value);document.documentElement.style.setProperty('--custom-bg-opacity',`${value/100}`);const p=load(ADVANCED_PREFS_KEY,{});p.backgroundOpacity=value;localStorage.setItem(ADVANCED_PREFS_KEY,JSON.stringify(p))});
 function initAdvancedSettings(){
@@ -262,6 +294,36 @@ document.addEventListener('click',e=>{if(e.target.closest('button'))playSettingF
 $('#advancedTestNotif')?.addEventListener('click',async()=>{if(typeof Notification==='undefined'){toast('Notificările nu sunt suportate');return}if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission==='granted'){await sendNotification('Payment Reminder','Totul funcționează! Notificările sunt ACTIVE.');toast('Notificare de test trimisă')}});
 initAdvancedSettings();
 initCustomBackground();
+
+// 20 de fundaluri premium incluse; selecția și mărimea textului se păstrează local.
+const WALLPAPERS=[
+ ['Aurora violet','radial-gradient(circle at 18% 18%,#8b5cf6 0,transparent 42%),linear-gradient(135deg,#080b20,#25104b 55%,#071a35)'],
+ ['Ocean neon','radial-gradient(circle at 80% 20%,#00d9ff 0,transparent 38%),linear-gradient(135deg,#031526,#063c59,#090d22)'],
+ ['Galaxie','radial-gradient(circle at 30% 25%,#f0abfc 0,transparent 24%),radial-gradient(circle at 70% 70%,#6366f1 0,transparent 34%),linear-gradient(135deg,#09051c,#160b38,#020617)'],
+ ['Emerald','radial-gradient(circle at 80% 15%,#10b981 0,transparent 35%),linear-gradient(145deg,#031b1a,#064e3b,#061525)'],
+ ['Apus','radial-gradient(circle at 70% 25%,#fb923c 0,transparent 35%),linear-gradient(145deg,#24102f,#7c2d5a,#111827)'],
+ ['Rose gold','radial-gradient(circle at 20% 20%,#f9a8d4 0,transparent 38%),linear-gradient(135deg,#251126,#6b315d,#171329)'],
+ ['Cyber blue','radial-gradient(circle at 80% 80%,#2563eb 0,transparent 42%),linear-gradient(135deg,#020617,#082f63,#111827)'],
+ ['Lava','radial-gradient(circle at 20% 80%,#f97316 0,transparent 36%),linear-gradient(135deg,#180b14,#7f1d1d,#160b22)'],
+ ['Ice','radial-gradient(circle at 75% 20%,#a5f3fc 0,transparent 34%),linear-gradient(135deg,#0b1930,#164e63,#172554)'],
+ ['Amethyst','radial-gradient(circle at 50% 10%,#c084fc 0,transparent 42%),linear-gradient(135deg,#160b2c,#4c1d95,#111827)'],
+ ['Midnight','radial-gradient(circle at 50% 0%,#334155 0,transparent 45%),linear-gradient(135deg,#020617,#111827,#030712)'],
+ ['Turquoise','radial-gradient(circle at 15% 70%,#2dd4bf 0,transparent 40%),linear-gradient(135deg,#042f2e,#134e4a,#0f172a)'],
+ ['Candy','radial-gradient(circle at 15% 20%,#fb7185 0,transparent 32%),radial-gradient(circle at 85% 75%,#a78bfa 0,transparent 36%),linear-gradient(135deg,#1e1235,#30144b)'],
+ ['Golden','radial-gradient(circle at 80% 15%,#facc15 0,transparent 35%),linear-gradient(135deg,#1c1917,#713f12,#111827)'],
+ ['Matrix','radial-gradient(circle at 20% 20%,#22c55e 0,transparent 30%),linear-gradient(135deg,#020d0a,#064e3b,#020617)'],
+ ['Blue purple','radial-gradient(circle at 20% 20%,#6366f1 0,transparent 38%),linear-gradient(135deg,#0b102b,#312e81,#0c1830)'],
+ ['Nebula pink','radial-gradient(circle at 70% 25%,#e879f9 0,transparent 38%),linear-gradient(135deg,#190b28,#701a75,#111827)'],
+ ['Forest','radial-gradient(circle at 75% 20%,#84cc16 0,transparent 30%),linear-gradient(135deg,#101d16,#365314,#0b1720)'],
+ ['Carbon','radial-gradient(circle at 80% 0%,#475569 0,transparent 35%),linear-gradient(135deg,#020617,#1e293b,#090d18)'],
+ ['Prism','radial-gradient(circle at 15% 20%,#22d3ee 0,transparent 30%),radial-gradient(circle at 80% 70%,#c084fc 0,transparent 36%),linear-gradient(135deg,#10112b,#30204e,#071c2a)']
+];
+async function applyWallpaper(index){const item=WALLPAPERS[index];if(!item)return;try{await backgroundMedia('delete')}catch{}const layer=$('#customBackgroundLayer'),preview=$('#backgroundPreview');if(customBackgroundUrl){URL.revokeObjectURL(customBackgroundUrl);customBackgroundUrl=null}layer.replaceChildren();layer.style.backgroundImage=item[1];preview.style.backgroundImage=item[1];preview.innerHTML=`<span>${item[0]} · activ</span>`;const p=load(ADVANCED_PREFS_KEY,{});p.wallpaperIndex=index;p.customWallpaper=false;localStorage.setItem(ADVANCED_PREFS_KEY,JSON.stringify(p));$$('.wallpaper-swatch').forEach((b,i)=>b.classList.toggle('selected',i===index));toast(`Fundalul „${item[0]}” a fost activat`)}
+function initWallpaperPicker(){const grid=$('#wallpaperGrid');if(!grid)return;grid.innerHTML='';WALLPAPERS.forEach((item,i)=>{const b=document.createElement('button');b.type='button';b.className='wallpaper-swatch';b.style.backgroundImage=item[1];b.title=item[0];b.setAttribute('aria-label',`Aplică fundalul ${item[0]}`);b.innerHTML=`<span>${String(i+1).padStart(2,'0')}</span>`;b.addEventListener('click',()=>applyWallpaper(i));grid.append(b)});const p=load(ADVANCED_PREFS_KEY,{});if(Number.isInteger(p.wallpaperIndex)&&!p.customWallpaper)applyWallpaperQuiet(p.wallpaperIndex)}
+function applyWallpaperQuiet(index){const item=WALLPAPERS[index];if(!item)return;$('#customBackgroundLayer').style.backgroundImage=item[1];const preview=$('#backgroundPreview');preview.style.backgroundImage=item[1];preview.innerHTML=`<span>${item[0]} · activ</span>`;$$('.wallpaper-swatch').forEach((b,i)=>b.classList.toggle('selected',i===index))}
+function setAppFontSize(value){const n=Math.max(14,Math.min(30,Number(value)||16));document.documentElement.style.setProperty('--app-font-size',`${n}px`);$('#fontSizeValue').textContent=`${n} px`;const p=load(ADVANCED_PREFS_KEY,{});p.appFontSize=n;localStorage.setItem(ADVANCED_PREFS_KEY,JSON.stringify(p))}
+const fontControl=$('#appFontSize');if(fontControl){const p=load(ADVANCED_PREFS_KEY,{});fontControl.value=p.appFontSize||16;setAppFontSize(fontControl.value);fontControl.addEventListener('input',()=>setAppFontSize(fontControl.value))}
+initWallpaperPicker();
 
 $('#testNotifBtn')?.addEventListener('click',async()=>{if(!('Notification'in window)){toast('Browserul nu suportă notificări');return}if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission!=='granted')return;if(cloud.pushReady){const ok=await sendCloudTestPush();if(ok){toast('Cererea de test push a fost trimisă');return}}await sendNotification('💰 Payment Reminder','Notificarea de test funcționează pe acest dispozitiv.');toast('Notificare de test afișată local');});
 
