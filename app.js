@@ -158,7 +158,7 @@ const APP_SUPABASE_URL='https://mmgclcdmywnumvdmvlhi.supabase.co';
 const APP_SUPABASE_KEY='sb_publishable_-sCDXSyqX8rJ5IAXMwQwSw_875YOJJT';
 let appAuthClient=null, appUser=null, appSyncBusy=false;
 function appClient(){
- if(!window.supabase?.createClient)throw new Error('Biblioteca Supabase nu s-a încărcat.');
+ if(!window.supabase?.createClient)throw new Error('Nu s-a încărcat biblioteca Supabase. Verifică internetul și reîncarcă aplicația.');
  if(!appAuthClient)appAuthClient=window.supabase.createClient(APP_SUPABASE_URL,APP_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  return appAuthClient;
 }
@@ -219,8 +219,33 @@ async function initAppAccount(){
   if(!user.is_anonymous)await loadCloudAppData();
  }catch(e){console.error('Auth init',e);setAccountUi(null);$('#accountError').textContent='Conectarea la Supabase nu a reușit: '+e.message}
 }
-$('#googleSignInBtn').addEventListener('click',continueWithGoogle);
-$('#guestSignInBtn').addEventListener('click',continueAsGuest);
+function showAccountError(message){
+ const el=$('#accountError');
+ if(el)el.textContent=message;
+}
+function bindAccountButtons(){
+ const googleBtn=$('#googleSignInBtn');
+ const guestBtn=$('#guestSignInBtn');
+ if(googleBtn&&!googleBtn.dataset.bound){
+  googleBtn.dataset.bound='1';
+  googleBtn.addEventListener('click',async(event)=>{
+   event.preventDefault(); showAccountError('');
+   googleBtn.disabled=true; googleBtn.textContent='Se conectează…';
+   try{await continueWithGoogle()}
+   finally{googleBtn.disabled=false;googleBtn.innerHTML='<span>G</span> Continuă cu Google'}
+  });
+ }
+ if(guestBtn&&!guestBtn.dataset.bound){
+  guestBtn.dataset.bound='1';
+  guestBtn.addEventListener('click',async(event)=>{
+   event.preventDefault(); showAccountError('');
+   guestBtn.disabled=true; guestBtn.textContent='Se pregătește…';
+   try{await continueAsGuest()}
+   finally{guestBtn.disabled=false;guestBtn.textContent='Continuă fără cont'}
+  });
+ }
+}
+bindAccountButtons();
 $('#accountActionBtn').addEventListener('click',async()=>{
  if(appUser&&!appUser.is_anonymous){if(!confirm('Te deconectezi din contul Google? Datele rămân în cloud.'))return;await appClient().auth.signOut();setAccountUi(null)}
  else{continueWithGoogle()}

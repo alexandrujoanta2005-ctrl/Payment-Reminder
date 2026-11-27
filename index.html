@@ -20,8 +20,8 @@
       <p class="eyebrow">BINE AI VENIT</p>
       <h1>Plățile tale, mereu la îndemână</h1>
       <p class="account-subtitle">Conectează-te cu Google pentru sincronizare pe toate dispozitivele sau continuă fără cont.</p>
-      <button id="googleSignInBtn" class="primary account-action"><span>G</span> Continuă cu Google</button>
-      <button id="guestSignInBtn" class="secondary account-action">Continuă fără cont</button>
+      <button type="button" id="googleSignInBtn" class="primary account-action"><span>G</span> Continuă cu Google</button>
+      <button type="button" id="guestSignInBtn" class="secondary account-action">Continuă fără cont</button>
       <p id="accountError" class="account-error" aria-live="polite"></p>
       <small class="pin-foot">DATELE RĂMÂN PRIVATE ȘI SUNT ASOCIATE CONTULUI TĂU</small>
     </div>
@@ -197,7 +197,8 @@
 </form></dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"
+    onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2.57.4/dist/umd/supabase.js'"></script>
   <script src="app.js"></script>
 </body>
 </html>
