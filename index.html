@@ -72,8 +72,9 @@
   <div class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">ABONAMENTE ÎMPĂRȚITE</p>
-        <h1>Payment Reminder</h1>
+        <p class="eyebrow">ABONAMENTE &amp; PLĂȚI</p>
+        <h1>Payment Reminder <span class="pro-crown">✦ PRO</span></h1>
+        <p class="topbar-subtitle">Gestionează, planifică și nu mai uita nicio plată</p>
       </div>
       <button id="notifBtn" class="icon-btn" aria-label="Activează notificările" title="Notificări">🔔</button>
     </header>
@@ -82,20 +83,20 @@
       <section id="homeView" class="view active">
         <div class="summary-grid">
           <article class="summary-card hero">
-            <span>De primit</span>
+            <span class="summary-icon" aria-hidden="true">▣</span><span>De primit</span>
             <strong id="totalDue">0 lei</strong>
             <small id="dueCount">0 plăți active</small>
           </article>
-          <article class="summary-card">
-            <span>Restante</span>
+          <article class="summary-card overdue-summary">
+            <span class="summary-icon" aria-hidden="true">◉</span><span>Restante</span>
             <strong id="overdueTotal">0 lei</strong>
             <small id="overdueCount">0 restante</small>
           </article>
         </div>
 
-        <div class="section-head">
+        <div class="section-head upcoming-heading">
           <div>
-            <h2>Următoarele plăți</h2>
+            <h2>◷ &nbsp;Următoarele plăți</h2>
             <p>Apasă pe o plată ca s-o modifici.</p>
           </div>
           <button id="addTopBtn" class="primary small">+ Adaugă</button>
@@ -106,9 +107,9 @@
           <button id="overdueFilter" class="secondary filter-btn" aria-pressed="false">Restante</button>
         </div>
         <div class="pro-tools">
-          <button id="calendarBtn" class="secondary">📅 Calendar</button><button id="scheduleMsgBtn" class="secondary">💬 Mesaje programate</button>
-          <button id="reportBtn" class="secondary">📊 Raport / PDF</button>
-          <button id="themeBtn" class="secondary">☀️ Temă luminoasă</button>
+          <button id="calendarBtn" class="secondary"><span>▦</span>Calendar</button><button id="scheduleMsgBtn" class="secondary"><span>•••</span>Mesaje<br>programate</button>
+          <button id="reportBtn" class="secondary"><span>▥</span>Raport / PDF</button>
+          <button id="themeBtn" class="secondary theme-tool"><span>☼</span>Temă luminoasă</button>
         </div>
         <div id="monthStats" class="month-stats"></div>
         <div id="calendarPanel" class="calendar-panel hidden"></div><div id="scheduledMessagesList" class="card-list"></div>
