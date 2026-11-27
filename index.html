@@ -127,15 +127,22 @@
             </div>
             <p class="note download-note">Profilul adaugă o pictogramă web care deschide Payment Reminder în mod ecran complet; nu instalează o aplicație iOS nativă și nu este un profil de semnare Apple. După descărcare, deschide Configurări → Profil descărcat → Instalează. Alternativ, folosește Safari → Partajare → Adaugă la ecranul principal.</p>
           </div>
+          <section class="profile-hero" aria-label="Profil cont">
+            <img id="settingsAvatar" class="profile-avatar" src="icons/icon-192.png" alt="Fotografia profilului">
+            <div class="profile-identity"><span class="eyebrow">CONTUL TĂU</span><strong id="settingsProfileName">Payment Reminder</strong><small id="settingsProfileEmail">Conectează-te cu Google pentru fotografia și e-mailul contului.</small></div>
+            <span class="profile-check">✓</span>
+          </section>
           <div class="settings-intro"><div class="settings-icon">⚙️</div><div><b>Preferințele tale</b><small>Configurează aplicația exact cum ai nevoie.</small></div></div><div class="settings-extra account-settings">
             <h3>👤 Cont și sincronizare</h3>
             <div class="setting-row"><div><b id="accountLabel">Neconectat</b><small id="accountStatus">Date locale pe acest dispozitiv</small></div><button id="accountActionBtn" class="secondary">Conectare Google</button></div>
             <p class="note">Cu Google, plățile, istoricul, mesajele programate și preferințele se sincronizează între dispozitive. Fără cont, datele rămân pe acest telefon.</p>
           </div>
-          <div class="setting-row">
-            <div><b>Notificări</b><small id="notifStatus">Neactivate</small></div>
-            <button id="enableNotifBtn" class="secondary">Activează</button>
-          </div>
+          <section class="settings-extra push-settings">
+            <div class="push-heading"><div><h3>🔔 Notificări Push</h3><p>Primește alerte pentru plăți și testează conexiunea.</p></div><span id="pushBadge" class="push-badge">Oprite</span></div>
+            <div class="setting-row"><div><b>Permisiunea notificărilor</b><small id="notifStatus">Neactivate</small></div><button id="enableNotifBtn" class="primary">Activează</button></div>
+            <div class="push-actions"><button id="testNotifBtn" class="secondary" type="button">Trimite notificare de test</button></div>
+            <p class="note">Push pe telefon necesită permisiune, conexiune la internet și configurarea serverului. Pe iPhone, instalează aplicația pe ecranul principal înainte de activare.</p>
+          </section>
           <div class="settings-extra">
 <h3>⚙️ Preferințe aplicație</h3>
 <label>Numele aplicației / titular<input id="profileName" maxlength="60" placeholder="Ex: Familia mea"></label>

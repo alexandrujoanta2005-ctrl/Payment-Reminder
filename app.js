@@ -140,10 +140,10 @@ async function enableNotifications(){
     await sendNotification('Payment Reminder','Notificările locale sunt active. Notificările locale sunt active.');
   }
 }
-function updateNotifStatus(){const s=$('#notifStatus');if(!('Notification'in window)){s.textContent='Nesuportate';return}s.textContent=Notification.permission==='granted'?'Permise':Notification.permission==='denied'?'Blocate':'Neactivate'}
+function updateNotifStatus(){const s=$('#notifStatus');if(!('Notification'in window)){if(s)s.textContent='Nesuportate';return}if(s)s.textContent=Notification.permission==='granted'?'Permise':Notification.permission==='denied'?'Blocate':'Neactivate';const b=$('#pushBadge');if(b){b.textContent=Notification.permission==='granted'?'Permise':'Oprite';b.classList.toggle('on',Notification.permission==='granted')}}
 async function sendNotification(title,body){if(Notification.permission!=='granted')return;try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(title,{body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'payment-reminder-local'})}catch{try{new Notification(title,{body})}catch{}}}
 $('#notifBtn').addEventListener('click',enableNotifications);$('#enableNotifBtn').addEventListener('click',enableNotifications);
-$('#testNotifBtn')?.addEventListener('click',async()=>{if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission!=='granted')return;if(cloud.pushReady){const ok=await sendCloudTestPush();if(ok){toast('Test push trimis prin server');return}}await sendNotification('💰 Test notificare','Funcționează local. ')});
+$('#testNotifBtn')?.addEventListener('click',async()=>{if(!('Notification'in window)){toast('Browserul nu suportă notificări');return}if(Notification.permission!=='granted')await enableNotifications();if(Notification.permission!=='granted')return;if(cloud.pushReady){const ok=await sendCloudTestPush();if(ok){toast('Cererea de test push a fost trimisă');return}}await sendNotification('💰 Payment Reminder','Notificarea de test funcționează pe acest dispozitiv.');toast('Notificare de test afișată local');});
 
 function checkReminders(){if(Notification.permission!=='granted'||cloud.pushReady)return;const now=Date.now();const notified=load(NOTIFIED_KEY,{});let changed=false;state.payments.forEach(p=>{const t=new Date(`${p.reminderDate}T${p.reminderTime}`).getTime();const key=`${p.id}:${p.reminderDate}:${p.reminderTime}`;if(t<=now&&now-t<6*60*60*1000&&!notified[key]){sendNotification(`💰 ${p.friend} trebuie să-ți dea bani`,`${fmtMoney(p.amount,p.currency)} pentru ${p.service}. Scadență: ${fmtDate(p.dueDate,p.dueTime)}.`);notified[key]=Date.now();changed=true}});if(changed)localStorage.setItem(NOTIFIED_KEY,JSON.stringify(notified))}
 setInterval(checkReminders,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
@@ -170,6 +170,14 @@ function setAccountUi(user){
  if(label)label.textContent=user?(user.is_anonymous?'Utilizare fără cont':(user.email||'Conectat cu Google')):'Neconectat';
  if(status)status.textContent=user?.is_anonymous?'Date pe acest dispozitiv; sesiune anonimă.':user?'Sincronizare cloud activă':'Date locale pe acest dispozitiv';
  if(btn){btn.textContent=user&&!user.is_anonymous?'Deconectare':'Conectare Google';}
+ const avatar=$('#settingsAvatar'),name=$('#settingsProfileName'),email=$('#settingsProfileEmail');
+ const meta=user?.user_metadata||{};
+ const picture=meta.avatar_url||meta.picture||meta.photo_url||'icons/icon-192.png';
+ if(avatar){avatar.src=picture;avatar.onerror=()=>{avatar.src='icons/icon-192.png'}}
+ if(name)name.textContent=user?(meta.full_name||meta.name||user.email?.split('@')[0]||'Cont Payment Reminder'):'Payment Reminder';
+ if(email)email.textContent=user?.email||(user?.is_anonymous?'Cont temporar pe acest dispozitiv':'Conectează-te cu Google pentru fotografia și e-mailul contului.');
+ const badge=$('#pushBadge');
+ if(badge){badge.textContent=(typeof Notification!=='undefined'&&Notification.permission==='granted'&&cloud.pushReady)?'Active':'Oprite';badge.classList.toggle('on',badge.textContent==='Active')}
 }
 function localAppPayload(){return {payments:state.payments,history:state.history,messages:scheduledMessages,preferences:load(PREFS_KEY,{}),waText:localStorage.getItem('pr_default_wa_text')||'',updatedAt:new Date().toISOString()}}
 function applyAppPayload(p){
