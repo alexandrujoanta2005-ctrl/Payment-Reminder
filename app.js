@@ -115,8 +115,33 @@ function setupPin(){
      if(error)throw error;
      const user=data.session?.user||null;
      setAccountUi(user);
-     if(!user||user.is_anonymous){
-       toast('Pentru resetarea PIN-ului trebuie să fii conectat cu Google.');
+     if(!user||user.is_anonymous||!user.email){
+       toast('Pentru resetarea PIN-ului trebuie să fii conectat cu un cont Google cu e-mail.');
+       return;
+     }
+     const confirmed=window.confirm(`Vom trimite un cod de verificare la ${user.email}. Continui?`);
+     if(!confirmed)return;
+     forgotPinButton.textContent='Se trimite codul…';
+     const {error:sendError}=await appClient().auth.signInWithOtp({
+       email:user.email,
+       options:{shouldCreateUser:false}
+     });
+     if(sendError)throw sendError;
+     const otp=window.prompt(`Introdu codul primit pe e-mailul ${user.email}:`);
+     if(otp===null)return;
+     if(!/^\d{6}$/.test(otp.trim())){
+       toast('Cod invalid. Introdu codul de 6 cifre primit pe e-mail.');
+       return;
+     }
+     forgotPinButton.textContent='Se verifică codul…';
+     const {data:verified,error:verifyError}=await appClient().auth.verifyOtp({
+       email:user.email,
+       token:otp.trim(),
+       type:'email'
+     });
+     if(verifyError)throw verifyError;
+     if(!verified.user||verified.user.id!==user.id){
+       toast('Codul nu aparține contului conectat. PIN-ul nu a fost modificat.');
        return;
      }
      $('#newPinInput').value='';
