@@ -343,7 +343,7 @@ if (installAppButton) installAppButton.addEventListener('click', async () => {
 });
 const iosInstallHelpButton = document.getElementById('iosInstallHelpBtn');
 if (iosInstallHelpButton) iosInstallHelpButton.addEventListener('click', () => {
-  toast('Safari: apasă Partajare (pătratul cu săgeată) → Adaugă la ecranul principal → Adaugă.');
+  toast('Pe iPhone: deschide în Safari → Partajare → Adaugă la ecranul principal. Pentru profil: descarcă fișierul .mobileconfig, apoi Configurări → Profil descărcat → Instalează.');
 });
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;

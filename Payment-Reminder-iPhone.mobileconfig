@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+	<key>PayloadIdentifier</key>
+	<string>ro.paymentreminder.iphone.webclip</string>
+	<key>PayloadUUID</key>
+	<string>F93DCFA1-F80B-481D-82BF-4BEB15E5B4B3</string>
+	<key>PayloadDisplayName</key>
+	<string>Payment Reminder – instalare iPhone</string>
+	<key>PayloadDescription</key>
+	<string>Adaugă o pictogramă Payment Reminder pe ecranul principal. Deschide aplicația web în mod ecran complet.</string>
+	<key>PayloadOrganization</key>
+	<string>Payment Reminder</string>
+	<key>PayloadRemovalDisallowed</key>
+	<false/>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>PayloadType</key>
+			<string>com.apple.webClip.managed</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>PayloadIdentifier</key>
+			<string>ro.paymentreminder.webclip</string>
+			<key>PayloadUUID</key>
+			<string>0CFC3D4A-54BD-4B69-A46F-1BC16A32F210</string>
+			<key>PayloadDisplayName</key>
+			<string>Payment Reminder – pictogramă pe iPhone</string>
+			<key>Label</key>
+			<string>Payment Reminder</string>
+			<key>URL</key>
+			<string>https://alexandrujoanta2005-ctrl.github.io/Payment-Reminder/</string>
+			<key>IsRemovable</key>
+			<true/>
+			<key>FullScreen</key>
+			<true/>
+			<key>Precomposed</key>
+			<true/>
+			<key>Icon</key>
+			<data>
+			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
+			AElFTkSuQmCC
+			</data>
+		</dict>
+	</array>
+</dict>
+</plist>
