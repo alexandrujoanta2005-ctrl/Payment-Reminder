@@ -65,6 +65,24 @@ Deno.serve(async (req) => {
       if (error) throw error;
       return json({ code, expiresInHours: 24, targetEmail: target.user.email });
     }
+    if (body.action === "delete_user") {
+      const userId = String(body.userId || "");
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) {
+        return json({ error: "Utilizator invalid." }, 400);
+      }
+      if (userId === user.id) {
+        return json({ error: "Nu îți poți șterge propriul cont de administrator." }, 400);
+      }
+      const { data: target, error: targetError } =
+        await admin.auth.admin.getUserById(userId);
+      if (targetError || !target.user) {
+        return json({ error: "Contul selectat nu există." }, 404);
+      }
+      const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
+      if (deleteError) throw deleteError;
+      return json({ success: true, deletedEmail: target.user.email || "" });
+    }
+
     if (body.action === "list_codes") {
       const { data, error } = await admin.from("admin_recovery_codes")
         .select("id,user_id,created_at,expires_at,used_at,revoked_at")

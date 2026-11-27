@@ -325,3 +325,19 @@ html{font-size:var(--app-font-size,16px)}
 .admin-code-dialog .admin-issued-code{display:block;text-align:center;font-size:1.55rem;letter-spacing:.14em;padding:18px 8px;margin:15px 0;border-radius:13px;background:#080e1d;color:#5eead4}
 .admin-code-dialog button{width:100%;margin-top:8px}
 @media(max-width:420px){.admin-stats{gap:6px}.admin-stats article{padding:9px}.admin-stats small{font-size:.64rem}.admin-user-row{align-items:flex-start;flex-direction:column}.admin-user-row button{width:100%}}
+
+/* Acces rapid la panoul administratorului din coltul dreapta-sus */
+.topbar-actions{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.admin-top-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 13px;border:1px solid rgba(167,139,250,.62);border-radius:13px;background:linear-gradient(135deg,rgba(124,58,237,.30),rgba(20,184,166,.17));color:#e9ddff;font-weight:900;letter-spacing:.08em;box-shadow:0 0 22px rgba(139,92,246,.18);cursor:pointer}
+.admin-top-button[hidden]{display:none!important}
+.admin-top-button span{font-size:.68rem}
+.admin-panel-dialog{width:min(94vw,900px);max-width:900px;max-height:88vh;overflow:auto;border:1px solid rgba(167,139,250,.55);border-radius:24px;padding:clamp(14px,3vw,24px);background:#0d1528;color:#f8fafc;box-shadow:0 28px 100px #000b}
+.admin-panel-dialog::backdrop{background:rgba(2,6,23,.78);backdrop-filter:blur(8px)}
+.admin-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.admin-dialog-head h2{margin:4px 0 0;font-size:1.25rem}
+.admin-panel-dialog .admin-panel{display:block!important}
+.admin-user-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.admin-user-actions button{white-space:nowrap}
+.admin-delete-button{border:1px solid rgba(248,113,113,.42);background:rgba(127,29,29,.22);color:#fecaca;border-radius:11px;padding:9px 11px;font-weight:800;cursor:pointer}
+.admin-delete-button:disabled{opacity:.55}
+@media(max-width:520px){.admin-user-actions{width:100%;flex-direction:column;align-items:stretch}.admin-user-actions button{width:100%}.admin-top-button{padding:9px 10px}.admin-panel-dialog{width:96vw;padding:12px}}

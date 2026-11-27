@@ -16,3 +16,12 @@ SECURITATE ȘI LIMITĂRI
 - Codurile sunt stocate numai ca hash SHA-256; codul în clar nu este păstrat.
 - Acest pachet adaugă emiterea și istoricul codurilor în panoul admin. Pentru ca utilizatorii să poată introduce codul și să-și reseteze PIN-ul, trebuie publicată și funcția de validare/redeem conectată la fluxul existent de recuperare. Nu este activată automat prin simpla generare.
 - Dacă administratorul își schimbă adresa de e-mail, actualizează ADMIN_EMAIL atât în app.js, cât și în funcția Edge.
+
+
+ACTUALIZARE PANOU ADMIN (buton sus dreapta + ștergere utilizator)
+- Înlocuiește fișierul Edge Function existent cu versiunea nouă din supabase/functions/admin-panel/index.ts și apasă Deploy.
+- Înlocuiește fișierele aplicației din GitHub cu index.html, app.js și styles.css din acest pachet.
+- După autentificarea ca alexandrujoanta6@gmail.com apare butonul ADMIN în colțul dreapta-sus al primei pagini.
+- Butonul deschide panoul într-o fereastră premium.
+- „Șterge cont” elimină definitiv utilizatorul din Supabase Auth. Datele care au foreign key cu ON DELETE CASCADE se șterg automat. Confirmarea cere tastarea ȘTERGE.
+- Nu poți șterge propriul cont de administrator din panou. Ștergerea este ireversibilă.

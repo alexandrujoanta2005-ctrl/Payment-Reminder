@@ -10,7 +10,7 @@
   <title>Payment Reminder</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=neon-background-1" />
+  <link rel="stylesheet" href="styles.css?v=admin-top-delete-2" />
 </head>
 <body>
   <div id="customBackgroundLayer" aria-hidden="true"></div>
@@ -78,7 +78,10 @@
         <h1>Payment Reminder <span class="pro-crown">✦ PRO</span></h1>
         <p class="topbar-subtitle">Gestionează, planifică și nu mai uita nicio plată</p>
       </div>
-      <button id="notifBtn" class="icon-btn" aria-label="Activează notificările" title="Notificări">🔔</button>
+      <div class="topbar-actions">
+        <button id="adminTopBtn" class="admin-top-button" type="button" hidden aria-label="Deschide panoul administratorului" title="Panou administrator">♛ <span>ADMIN</span></button>
+        <button id="notifBtn" class="icon-btn" aria-label="Activează notificările" title="Notificări">🔔</button>
+      </div>
     </header>
 
     <main>
@@ -323,6 +326,10 @@
 <div class="dialog-actions"><button type="submit" class="primary">Salvează programarea</button></div>
 </form></dialog>
 
+  <dialog id="adminPanelDialog" class="admin-panel-dialog" aria-label="Panou administrator">
+    <div class="admin-dialog-head"><div><span class="settings-kicker">CONTROL CENTER</span><h2>Panou administrator</h2></div><button id="adminPanelClose" class="icon-btn" type="button" aria-label="Închide">✕</button></div>
+    <div id="adminPanelDialogMount"></div>
+  </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"
     onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2.57.4/dist/umd/supabase.js'"></script>

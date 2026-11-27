@@ -455,7 +455,21 @@ function renderAdminUsers(users=[]){
    }catch(e){adminMessage(e.message||'Nu s-a putut genera codul.');}
    finally{action.disabled=false;action.textContent='Generează din nou';}
   });
-  row.append(info,action);host.append(row);
+  const remove=document.createElement('button');remove.className='admin-delete-button';remove.type='button';remove.textContent='Șterge cont';
+  remove.addEventListener('click',async()=>{
+   const email=user.email||'acest utilizator';
+   if(!confirm(`ATENȚIE! Ștergi definitiv contul ${email}?\n\nSe vor șterge și datele asociate contului din aplicație. Acțiunea nu poate fi anulată.`))return;
+   if(prompt('Pentru confirmare, scrie ȘTERGE')!=='ȘTERGE')return;
+   remove.disabled=true;remove.textContent='Se șterge…';adminMessage('');
+   try{
+    await adminRequest('delete_user',{userId:user.id});
+    toast('Contul '+email+' a fost șters definitiv.');
+    await loadAdminData();
+   }catch(e){adminMessage(e.message||'Nu s-a putut șterge contul.');}
+   finally{remove.disabled=false;remove.textContent='Șterge cont';}
+  });
+  const actions=document.createElement('div');actions.className='admin-user-actions';actions.append(action,remove);
+  row.append(info,actions);host.append(row);
  });
 }
 async function loadAdminData(){
@@ -480,7 +494,21 @@ async function loadAdminData(){
 function initAdminPanel(){
  const panel=$('#adminPanel');if(!panel)return;
  const allowed=isAppAdmin();panel.hidden=!allowed;
+ const topButton=$('#adminTopBtn'),dialog=$('#adminPanelDialog'),mount=$('#adminPanelDialogMount');
+ if(topButton){
+  topButton.hidden=!allowed;
+  if(!topButton.dataset.bound){
+   topButton.dataset.bound='1';
+   topButton.addEventListener('click',()=>{if(isAppAdmin()){if(mount&&panel.parentElement!==mount)mount.append(panel);dialog?.showModal();loadAdminData();}});
+  }
+ }
+ if(dialog&&!dialog.dataset.bound){
+  dialog.dataset.bound='1';
+  $('#adminPanelClose')?.addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+ }
  if(!allowed)return;
+ if(mount&&panel.parentElement!==mount)mount.append(panel);
  loadAdminData();
  const refresh=$('#adminRefreshBtn');refresh?.addEventListener('click',loadAdminData);
  const search=$('#adminUserSearch');search?.addEventListener('input',()=>{
