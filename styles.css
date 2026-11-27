@@ -99,3 +99,12 @@ body{background:radial-gradient(ellipse at 15% -10%,rgba(109,93,252,.28),transpa
 #paymentForm .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 #paymentForm button[type=submit]{width:100%;min-height:54px;margin-top:8px;border-radius:16px}
 @media(max-width:420px){#paymentDialog{padding:18px;border-radius:23px}#paymentForm .two-col{grid-template-columns:1fr 1fr;gap:9px}}
+
+
+/* Fixed home header and totals: keep the brand and summary visible while scrolling */
+body{padding-top:0!important}
+.topbar{position:sticky!important;top:0!important;z-index:40!important;padding-top:calc(10px + env(safe-area-inset-top))!important;padding-bottom:10px!important;background:rgba(8,13,25,.97)!important;backdrop-filter:blur(18px)}
+.summary-grid{position:sticky;top:calc(72px + env(safe-area-inset-top));z-index:35;padding:8px 0 10px;background:#090d18;isolation:isolate}
+.light-theme .topbar{background:rgba(242,245,251,.97)!important}
+.light-theme .summary-grid{background:#f2f5fb}
+@media(max-width:520px){.topbar{padding-top:calc(8px + env(safe-area-inset-top))!important}.summary-grid{top:calc(66px + env(safe-area-inset-top));gap:10px}}
