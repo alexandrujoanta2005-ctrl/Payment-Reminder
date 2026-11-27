@@ -346,6 +346,7 @@ function appClient(){
 }
 function setAccountUi(user){
  appUser=user||null;
+ initAdminPanel();
  const gate=$('#accountGate');
  if(gate)gate.classList.toggle('visible',!user);
  const label=$('#accountLabel'),status=$('#accountStatus'),btn=$('#accountActionBtn');
@@ -413,6 +414,81 @@ function showAccountError(message){
  const el=$('#accountError');
  if(el)el.textContent=message;
 }
+
+// ---------- PANOU ADMINISTRATOR SECURIZAT ----------
+const ADMIN_EMAIL='alexandrujoanta6@gmail.com';
+function isAppAdmin(){return !!appUser&&!appUser.is_anonymous&&(appUser.email||'').toLowerCase()===ADMIN_EMAIL;}
+function adminMessage(message){const el=$('#adminError');if(el)el.textContent=message||'';}
+async function adminRequest(action,payload={}){
+ const client=appClient();
+ const {data:{session}}=await client.auth.getSession();
+ if(!session?.access_token)throw new Error('Trebuie să fii autentificat.');
+ const {data,error}=await client.functions.invoke('admin-panel',{body:{action,...payload}});
+ if(error)throw new Error(error.message||'Eroare la apelarea panoului admin.');
+ if(data?.error)throw new Error(data.error);
+ return data;
+}
+function renderAdminUsers(users=[]){
+ const host=$('#adminUsersList');if(!host)return;
+ $('#adminUserCount').textContent=String(users.length);
+ if(!users.length){host.innerHTML='<p class="note">Nu au fost găsiți utilizatori.</p>';return;}
+ host.replaceChildren();
+ users.forEach(user=>{
+  const row=document.createElement('article');row.className='admin-user-row';
+  const info=document.createElement('div');info.className='admin-user-info';
+  const title=document.createElement('strong');title.textContent=user.name||user.email||'Utilizator';
+  const sub=document.createElement('small');sub.textContent=user.email||'Fără e-mail';
+  info.append(title,sub);
+  const action=document.createElement('button');action.className='primary';action.type='button';action.textContent='Generează cod';
+  action.addEventListener('click',async()=>{
+   action.disabled=true;action.textContent='Se generează…';adminMessage('');
+   try{
+    const result=await adminRequest('issue_code',{userId:user.id});
+    const code=result.code;
+    const dialog=document.createElement('dialog');dialog.className='admin-code-dialog';
+    const wrap=document.createElement('div');wrap.innerHTML='<span class="settings-kicker">COD NOU · AFIȘAT O SINGURĂ DATĂ</span><h3>Cod de recuperare generat</h3><p>Trimite acest cod utilizatorului selectat. Nu va mai putea fi afișat ulterior.</p>';
+    const value=document.createElement('code');value.className='admin-issued-code';value.textContent=code;
+    const copy=document.createElement('button');copy.className='primary';copy.textContent='Copiază codul';copy.onclick=async()=>{await navigator.clipboard.writeText(code);copy.textContent='Copiat ✓';};
+    const close=document.createElement('button');close.className='secondary';close.textContent='Închide';close.onclick=()=>dialog.close();
+    wrap.append(value,copy,close);dialog.append(wrap);document.body.append(dialog);dialog.showModal();dialog.addEventListener('close',()=>dialog.remove());
+    await loadAdminData();
+   }catch(e){adminMessage(e.message||'Nu s-a putut genera codul.');}
+   finally{action.disabled=false;action.textContent='Generează din nou';}
+  });
+  row.append(info,action);host.append(row);
+ });
+}
+async function loadAdminData(){
+ if(!isAppAdmin())return;
+ adminMessage('');
+ try{
+  const [users,codes]=await Promise.all([adminRequest('list_users'),adminRequest('list_codes')]);
+  renderAdminUsers(users.users||[]);
+  const list=codes.codes||[];
+  $('#adminCodeCount').textContent=String(list.length);
+  $('#adminActiveCount').textContent=String(list.filter(x=>!x.used_at&&!x.revoked_at&&new Date(x.expires_at)>new Date()).length);
+  const host=$('#adminCodeHistory');host.replaceChildren();
+  if(!list.length){host.innerHTML='<p class="note">Nu există încă coduri emise.</p>';return;}
+  list.forEach(item=>{
+   const row=document.createElement('div');row.className='admin-history-row';
+   const left=document.createElement('span');left.textContent=`${item.user_email||'Utilizator'} · ${new Date(item.created_at).toLocaleString('ro-RO')}`;
+   const right=document.createElement('b');right.textContent=item.used_at?'Folosit':item.revoked_at?'Revocat':new Date(item.expires_at)<new Date()?'Expirat':'Activ';
+   row.append(left,right);host.append(row);
+  });
+ }catch(e){adminMessage('Panoul nu este configurat sau accesul a fost refuzat: '+(e.message||''));}
+}
+function initAdminPanel(){
+ const panel=$('#adminPanel');if(!panel)return;
+ const allowed=isAppAdmin();panel.hidden=!allowed;
+ if(!allowed)return;
+ loadAdminData();
+ const refresh=$('#adminRefreshBtn');refresh?.addEventListener('click',loadAdminData);
+ const search=$('#adminUserSearch');search?.addEventListener('input',()=>{
+  const q=search.value.trim().toLowerCase();
+  $$('#adminUsersList .admin-user-row').forEach(row=>row.hidden=!row.textContent.toLowerCase().includes(q));
+ });
+}
+
 function bindAccountButtons(){
  const googleBtn=$('#googleSignInBtn');
  const guestBtn=$('#guestSignInBtn');

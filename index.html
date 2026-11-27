@@ -174,6 +174,19 @@
             <div class="setting-row"><div><b id="accountLabel">Neconectat</b><small id="accountStatus">Date locale pe acest dispozitiv</small></div><button id="accountActionBtn" class="secondary">Conectare Google</button></div>
             <p class="note">Cu Google, plățile, istoricul, mesajele programate și preferințele se sincronizează între dispozitive. Fără cont, datele rămân pe acest telefon.</p>
           </div>
+          <section id="adminPanel" class="settings-extra admin-panel" hidden>
+            <div class="admin-top"><div><span class="settings-kicker">CONTROL CENTER · ADMIN</span><h3>♛ Panou administrator</h3><p>Administrare conturi și coduri de recuperare.</p></div><span class="admin-live">SECURE</span></div>
+            <div class="admin-stats">
+              <article><small>Utilizatori găsiți</small><strong id="adminUserCount">—</strong></article>
+              <article><small>Coduri emise</small><strong id="adminCodeCount">—</strong></article>
+              <article><small>Coduri active</small><strong id="adminActiveCount">—</strong></article>
+            </div>
+            <div class="admin-toolbar"><input id="adminUserSearch" type="search" placeholder="Caută utilizator după nume sau e-mail"><button id="adminRefreshBtn" class="secondary">Reîncarcă</button></div>
+            <div id="adminUsersList" class="admin-users"><p class="note">Se încarcă utilizatorii…</p></div>
+            <div class="admin-history"><h4>Istoric coduri de recuperare</h4><div id="adminCodeHistory"><p class="note">Istoricul apare după configurarea funcției securizate.</p></div></div>
+            <p class="note">Codurile sunt generate pe server, salvate doar sub formă hash și asociate contului ales. Codul este afișat o singură dată la emitere. Nu poți vedea PIN-urile utilizatorilor.</p>
+            <p id="adminError" class="admin-error" role="status"></p>
+          </section>
           <section class="settings-extra push-settings">
             <div class="push-heading"><div><h3>🔔 Notificări Push</h3><p>Primește alerte pentru plăți și testează conexiunea.</p></div><span id="pushBadge" class="push-badge">Oprite</span></div>
             <div class="setting-row"><div><b>Permisiunea notificărilor</b><small id="notifStatus">Neactivate</small></div><button id="enableNotifBtn" class="primary">Activează</button></div>

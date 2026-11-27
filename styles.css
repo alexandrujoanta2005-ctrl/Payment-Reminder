@@ -302,3 +302,26 @@ html{font-size:var(--app-font-size,16px)}
 .biometric-card .advanced-head p{margin:5px 0;color:var(--muted);font-size:.82rem;line-height:1.5}
 .biometric-card .note{font-size:.75rem;line-height:1.55}
 #pinBioGateBtn{border:1px solid rgba(164,132,255,.55);background:linear-gradient(120deg,rgba(126,65,255,.2),rgba(34,190,190,.12))}
+
+/* Panou administrator premium */
+.admin-panel{border:1px solid rgba(151,111,255,.42);border-radius:22px;padding:18px;background:linear-gradient(145deg,rgba(49,31,86,.52),rgba(12,27,48,.94));box-shadow:0 18px 48px rgba(0,0,0,.2)}
+.admin-panel[hidden]{display:none!important}
+.admin-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.admin-top h3{margin:5px 0;font-size:1.2rem}.admin-top p{margin:0;color:var(--muted);font-size:.84rem}
+.admin-live{font-size:.68rem;letter-spacing:.12em;border:1px solid rgba(45,212,191,.45);color:#5eead4;padding:6px 9px;border-radius:99px}
+.admin-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:17px 0}
+.admin-stats article{padding:12px;border-radius:14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07)}
+.admin-stats small{display:block;color:var(--muted);font-size:.7rem}.admin-stats strong{display:block;font-size:1.35rem;margin-top:5px}
+.admin-toolbar{display:flex;gap:8px;margin:12px 0}.admin-toolbar input{min-width:0;flex:1}
+.admin-users{display:grid;gap:8px;max-height:360px;overflow:auto}
+.admin-user-row,.admin-history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:13px}
+.admin-user-info{min-width:0;display:grid;gap:3px}.admin-user-info strong{overflow-wrap:anywhere}.admin-user-info small{color:var(--muted);overflow-wrap:anywhere}
+.admin-user-row button{flex-shrink:0;font-size:.78rem;padding:9px 11px}
+.admin-history{margin-top:20px}.admin-history h4{margin:0 0 10px}.admin-history-row{font-size:.76rem;margin:6px 0}.admin-history-row span{overflow-wrap:anywhere}.admin-history-row b{white-space:nowrap}
+.admin-error{color:#fca5a5;font-size:.82rem;min-height:1.2em}
+.admin-code-dialog{width:min(92vw,430px);border:1px solid rgba(167,139,250,.5);border-radius:22px;background:#10172b;color:#f8fafc;padding:22px;box-shadow:0 25px 80px #0009}
+.admin-code-dialog::backdrop{background:#030712bb;backdrop-filter:blur(5px)}
+.admin-code-dialog h3{margin:8px 0}.admin-code-dialog p{color:#aab4ca;font-size:.86rem;line-height:1.5}
+.admin-code-dialog .admin-issued-code{display:block;text-align:center;font-size:1.55rem;letter-spacing:.14em;padding:18px 8px;margin:15px 0;border-radius:13px;background:#080e1d;color:#5eead4}
+.admin-code-dialog button{width:100%;margin-top:8px}
+@media(max-width:420px){.admin-stats{gap:6px}.admin-stats article{padding:9px}.admin-stats small{font-size:.64rem}.admin-user-row{align-items:flex-start;flex-direction:column}.admin-user-row button{width:100%}}

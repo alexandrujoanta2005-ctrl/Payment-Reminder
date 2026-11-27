@@ -1,0 +1,18 @@
+CONFIGURARE PANOU ADMINISTRATOR — Payment Reminder
+
+Administrator autorizat: alexandrujoanta6@gmail.com
+
+1. În Supabase → SQL Editor, rulează întregul fișier schema.sql actualizat (sau doar blocul admin_recovery_codes).
+2. În Supabase → Edge Functions, publică funcția din:
+   supabase/functions/admin-panel/index.ts
+   Numele funcției trebuie să fie: admin-panel
+3. Păstrează verificarea JWT activată pentru funcție. Nu introduce cheia service_role în aplicația web.
+   Funcția folosește SUPABASE_URL, SUPABASE_ANON_KEY și SUPABASE_SERVICE_ROLE_KEY din secretele proiectului.
+4. Autentifică-te în aplicație cu alexandrujoanta6@gmail.com. Panoul apare în Setări.
+5. Caută utilizatorul și apasă „Generează cod”. Codul este afișat o singură dată, expiră în 24 de ore, iar emiterea unui cod nou revocă vechile coduri nefolosite ale acelui utilizator.
+
+SECURITATE ȘI LIMITĂRI
+- UI-ul este ascuns pentru celelalte conturi, iar autorizarea reală este verificată din nou în Edge Function pe baza utilizatorului autentificat.
+- Codurile sunt stocate numai ca hash SHA-256; codul în clar nu este păstrat.
+- Acest pachet adaugă emiterea și istoricul codurilor în panoul admin. Pentru ca utilizatorii să poată introduce codul și să-și reseteze PIN-ul, trebuie publicată și funcția de validare/redeem conectată la fluxul existent de recuperare. Nu este activată automat prin simpla generare.
+- Dacă administratorul își schimbă adresa de e-mail, actualizează ADMIN_EMAIL atât în app.js, cât și în funcția Edge.

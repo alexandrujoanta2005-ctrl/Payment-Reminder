@@ -81,3 +81,20 @@ grant select, insert, update, delete on public.reminders to authenticated;
 grant select, insert, update, delete on public.push_subscriptions to authenticated;
 grant all on public.reminders to service_role;
 grant all on public.push_subscriptions to service_role;
+
+
+-- ADMIN: coduri unice de recuperare, administrate exclusiv prin Edge Function.
+create table if not exists public.admin_recovery_codes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  code_hash text not null unique,
+  created_by uuid not null references auth.users(id),
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null default (now() + interval '24 hours'),
+  used_at timestamptz,
+  revoked_at timestamptz
+);
+create index if not exists admin_recovery_codes_user_idx on public.admin_recovery_codes(user_id, created_at desc);
+alter table public.admin_recovery_codes enable row level security;
+revoke all on public.admin_recovery_codes from anon, authenticated;
+grant all on public.admin_recovery_codes to service_role;
