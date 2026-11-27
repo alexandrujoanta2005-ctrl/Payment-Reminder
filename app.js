@@ -94,63 +94,53 @@ function setupPin(){
  }
  submit.addEventListener('click',unlock);input.addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
 
- // Recuperare PIN prin e-mail: utilizatorul introduce adresa contului.
+ // Recuperare PIN printr-o fereastră proprie, optimizată pentru mobil.
  const forgotPinButton=$('#pinForgotBtn');
- if(forgotPinButton){
- forgotPinButton.onclick=async(event)=>{
-   event.preventDefault();
-   if(forgotPinButton.disabled)return;
-   const oldText=forgotPinButton.textContent;
-   const emailInput=window.prompt('Introdu adresa de e-mail asociată contului tău:');
-   if(emailInput===null)return;
-   const email=emailInput.trim().toLowerCase();
-   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-     toast('Introdu o adresă de e-mail validă.');
+ const recoveryDialog=$('#pinRecoveryDialog');
+ const recoveryForm=$('#pinRecoveryForm');
+ const recoveryEmail=$('#pinRecoveryEmail');
+ const recoveryOtp=$('#pinRecoveryOtp');
+ const recoveryOtpWrap=$('#pinRecoveryOtpWrap');
+ const recoveryMessage=$('#pinRecoveryMessage');
+ const recoverySubmit=$('#pinRecoverySubmit');
+ let recoveryStep='email';
+ let recoveryAddress='';
+ const setRecoveryBusy=(busy,label)=>{recoverySubmit.disabled=busy;recoverySubmit.innerHTML=busy?'<span class="pin-recovery-spinner"></span> '+label:(recoveryStep==='email'?'Trimite codul <span>→</span>':'Verifică și continuă <span>→</span>');};
+ const closeRecovery=()=>{recoveryDialog.close();recoveryForm.reset();recoveryStep='email';recoveryAddress='';recoveryOtpWrap.hidden=true;recoveryEmail.disabled=false;recoveryMessage.textContent='';recoveryMessage.className='pin-recovery-message';setRecoveryBusy(false);};
+ const openRecovery=()=>{recoveryForm.reset();recoveryStep='email';recoveryAddress='';recoveryOtpWrap.hidden=true;recoveryEmail.disabled=false;recoveryMessage.textContent='';recoveryMessage.className='pin-recovery-message';setRecoveryBusy(false);recoveryDialog.showModal();setTimeout(()=>recoveryEmail.focus(),100);};
+ if(forgotPinButton){forgotPinButton.addEventListener('click',openRecovery);}
+ $('#pinRecoveryClose').addEventListener('click',closeRecovery);
+ $('#pinRecoveryCancel').addEventListener('click',closeRecovery);
+ recoveryDialog.addEventListener('click',e=>{if(e.target===recoveryDialog)closeRecovery()});
+ recoveryForm.addEventListener('submit',async e=>{
+   e.preventDefault();
+   if(recoverySubmit.disabled)return;
+   if(recoveryStep==='email'){
+     const email=recoveryEmail.value.trim().toLowerCase();
+     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){recoveryMessage.textContent='Introdu o adresă de e-mail validă.';recoveryMessage.className='pin-recovery-message error';recoveryEmail.focus();return;}
+     setRecoveryBusy(true,'Se trimite codul…');recoveryMessage.textContent='';
+     try{
+       const {error}=await appClient().auth.signInWithOtp({email,options:{shouldCreateUser:false}});
+       if(error)throw error;
+       recoveryAddress=email;recoveryStep='otp';recoveryEmail.disabled=true;recoveryOtpWrap.hidden=false;
+       $('#pinRecoveryTitle').textContent='Verifică e-mailul';
+       $('#pinRecoveryDescription').textContent='Dacă există un cont pentru această adresă, vei primi un cod de 6 cifre. Introdu-l mai jos.';
+       recoveryMessage.textContent='Codul a fost solicitat. Verifică și folderul Spam.';recoveryMessage.className='pin-recovery-message success';
+       recoveryOtp.required=true;setRecoveryBusy(false);recoveryOtp.focus();
+     }catch(err){console.error('PIN recovery send:',err);recoveryMessage.textContent='Nu am putut solicita codul. Verifică internetul și setările e-mailului.';recoveryMessage.className='pin-recovery-message error';setRecoveryBusy(false);}
      return;
    }
-   forgotPinButton.disabled=true;
+   const token=recoveryOtp.value.trim();
+   if(!/^\d{6}$/.test(token)){recoveryMessage.textContent='Codul trebuie să conțină 6 cifre.';recoveryMessage.className='pin-recovery-message error';recoveryOtp.focus();return;}
+   setRecoveryBusy(true,'Se verifică codul…');recoveryMessage.textContent='';
    try{
-     forgotPinButton.textContent='Se verifică e-mailul…';
-     const client=appClient();
-     // shouldCreateUser:false împiedică înregistrarea unui cont nou.
-     // Supabase nu trimite OTP pentru o adresă fără cont existent.
-     const {error:sendError}=await client.auth.signInWithOtp({
-       email,
-       options:{shouldCreateUser:false}
-     });
-     if(sendError)throw sendError;
-     const otp=window.prompt(`Dacă există un cont asociat adresei ${email}, vei primi un cod. Introdu codul de 6 cifre primit:`);
-     if(otp===null)return;
-     if(!/^\d{6}$/.test(otp.trim())){
-       toast('Cod invalid. Introdu codul de 6 cifre primit pe e-mail.');
-       return;
-     }
-     forgotPinButton.textContent='Se verifică codul…';
-     const {data:verified,error:verifyError}=await client.auth.verifyOtp({
-       email,
-       token:otp.trim(),
-       type:'email'
-     });
-     if(verifyError)throw verifyError;
-     if(!verified.user||verified.user.is_anonymous){
-       toast('Nu am putut confirma un cont valid pentru această adresă.');
-       return;
-     }
-     setAccountUi(verified.user);
-     $('#newPinInput').value='';
-     $('#confirmPinInput').value='';
-     $('#pinManageDialog').showModal();
-   }catch(err){
-     console.error('PIN recovery:',err);
-     const message=String(err?.message||'');
-     if(/invalid|expired|token/i.test(message))toast('Cod incorect sau expirat. Cere un cod nou.');
-     else toast('Nu am putut trimite sau verifica acel cod. Verifică adresa și conexiunea, apoi încearcă din nou.');
-   }finally{
-     forgotPinButton.disabled=false;
-     forgotPinButton.textContent=oldText;
-   }
- };
- }
+     const {data:verified,error}=await appClient().auth.verifyOtp({email:recoveryAddress,token,type:'email'});
+     if(error)throw error;
+     if(!verified.user||verified.user.is_anonymous){throw new Error('Nu a fost confirmat un cont valid.');}
+     setAccountUi(verified.user);closeRecovery();
+     $('#newPinInput').value='';$('#confirmPinInput').value='';$('#pinManageDialog').showModal();
+   }catch(err){console.error('PIN recovery verify:',err);recoveryMessage.textContent='Cod incorect sau expirat. Verifică-l și încearcă din nou.';recoveryMessage.className='pin-recovery-message error';setRecoveryBusy(false);recoveryOtp.focus();}
+ });
  $('#pinBtn').addEventListener('click',()=>{$('#newPinInput').value='';$('#confirmPinInput').value='';$('#pinManageDialog').showModal()});
  $('#closePinManage').addEventListener('click',()=>$('#pinManageDialog').close());
  $('#pinManageForm').addEventListener('submit',e=>{e.preventDefault();const a=$('#newPinInput').value,b=$('#confirmPinInput').value;if(!/^\d{4,6}$/.test(a)){toast('PIN-ul trebuie să aibă 4–6 cifre');return}if(a!==b){toast('PIN-urile nu coincid');return}localStorage.setItem(PIN_KEY,a);sessionStorage.setItem('pin_ok','1');$('#pinStatus').textContent='Activ — blocare la pornire';$('#pinManageDialog').close();toast('PIN actualizat')});

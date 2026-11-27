@@ -41,6 +41,26 @@
       <small class="pin-foot">GESTIONEAZĂ PLĂȚILE SIMPLU ȘI RAPID</small>
     </div>
   </section>
+  <dialog id="pinRecoveryDialog" class="pin-recovery-dialog" aria-labelledby="pinRecoveryTitle">
+    <form id="pinRecoveryForm" class="pin-recovery-card" novalidate>
+      <button type="button" id="pinRecoveryClose" class="pin-recovery-close" aria-label="Închide">×</button>
+      <div class="pin-recovery-icon" aria-hidden="true">✉</div>
+      <p class="eyebrow">SECURITATE PAYMENT REMINDER</p>
+      <h2 id="pinRecoveryTitle">Recuperare PIN</h2>
+      <p id="pinRecoveryDescription" class="pin-recovery-description">Introdu adresa de e-mail asociată contului tău. Îți trimitem un cod de verificare.</p>
+      <label class="pin-recovery-label" for="pinRecoveryEmail">Adresă de e-mail</label>
+      <input id="pinRecoveryEmail" class="pin-recovery-input" type="email" autocomplete="email" inputmode="email" placeholder="nume@exemplu.ro" required>
+      <div id="pinRecoveryOtpWrap" class="pin-recovery-otp-wrap" hidden>
+        <label class="pin-recovery-label" for="pinRecoveryOtp">Cod de verificare</label>
+        <input id="pinRecoveryOtp" class="pin-recovery-input pin-recovery-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+      </div>
+      <p id="pinRecoveryMessage" class="pin-recovery-message" role="status" aria-live="polite"></p>
+      <button id="pinRecoverySubmit" class="pin-recovery-submit" type="submit">Trimite codul <span>→</span></button>
+      <button id="pinRecoveryCancel" class="pin-recovery-cancel" type="button">Anulează</button>
+      <p class="pin-recovery-foot">Dacă adresa nu are un cont, nu se creează unul nou.</p>
+    </form>
+  </dialog>
+
   <dialog id="pinManageDialog" class="pin-manage-dialog">
     <form id="pinManageForm" method="dialog">
       <div class="dialog-head"><div><p class="eyebrow">SECURITATE</p><h2>Schimbă PIN-ul</h2></div><button type="button" id="closePinManage" class="icon-btn">✕</button></div>
