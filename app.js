@@ -76,11 +76,32 @@ $('#refreshAppBtn').addEventListener('click',()=>{renderAll();renderScheduledMes
 $('#clearLocalBtn').addEventListener('click',()=>{if(!confirm('Ștergi toate plățile, istoricul și mesajele programate local? Această acțiune nu poate fi anulată.'))return;state.payments=[];state.history=[];scheduledMessages=[];save({sync:false});persistMessages();localStorage.removeItem(NOTIFIED_KEY);toast('Date locale șterse')});
 
 function setupPin(){
- $('#pinBtn').addEventListener('click',()=>{const pin=prompt('Setează un PIN de 4-6 cifre:');if(!pin)return;if(!/^\d{4,6}$/.test(pin)){toast('PIN-ul trebuie să aibă 4-6 cifre');return}localStorage.setItem(PIN_KEY,pin);toast('PIN salvat pe acest dispozitiv')});
- if(localStorage.getItem(PIN_KEY)&&!sessionStorage.getItem('pin_ok')){const p=prompt('Introdu PIN-ul Payment Reminder');if(p===localStorage.getItem(PIN_KEY))sessionStorage.setItem('pin_ok','1');else{document.body.innerHTML='<main style="padding:30px;color:white;background:#090d18;min-height:100vh">Acces blocat. Reîncarcă și introdu PIN-ul corect.</main>';}}
+ const gate=$('#pinGate'),input=$('#pinGateInput'),submit=$('#pinGateSubmit');
+ const existing=localStorage.getItem(PIN_KEY);
+ if(!sessionStorage.getItem('pin_ok')){
+   gate.classList.add('visible');
+   if(existing){$('#pinGateEyebrow').textContent='BINE AI REVENIT';$('#pinGateTitle').textContent='Introdu PIN-ul';$('#pinGateSubtitle').textContent='Introdu codul tău pentru a accesa aplicația.'}
+   else{$('#pinGateEyebrow').textContent='CONFIGURARE INIȚIALĂ';$('#pinGateTitle').textContent='Creează un PIN';$('#pinGateSubtitle').textContent='Alege un cod de 4–6 cifre pentru a-ți proteja aplicația.'}
+ }
+ function unlock(){
+   const value=input.value.trim();
+   if(!existing && !localStorage.getItem(PIN_KEY)){
+     if(!/^\\d{4,6}$/.test(value)){$('#pinGateError').textContent='PIN-ul trebuie să conțină 4–6 cifre.';return}
+     localStorage.setItem(PIN_KEY,value);sessionStorage.setItem('pin_ok','1');gate.classList.remove('visible');$('#pinStatus').textContent='Activ — blocare la pornire';toast('PIN configurat cu succes');return;
+   }
+   if(value===localStorage.getItem(PIN_KEY)){sessionStorage.setItem('pin_ok','1');gate.classList.remove('visible');$('#pinGateError').textContent='';}
+   else{$('#pinGateError').textContent='PIN incorect. Încearcă din nou.';input.value='';input.focus()}
+ }
+ submit.addEventListener('click',unlock);input.addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
+ $('#pinBtn').addEventListener('click',()=>{$('#newPinInput').value='';$('#confirmPinInput').value='';$('#pinManageDialog').showModal()});
+ $('#closePinManage').addEventListener('click',()=>$('#pinManageDialog').close());
+ $('#pinManageForm').addEventListener('submit',e=>{e.preventDefault();const a=$('#newPinInput').value,b=$('#confirmPinInput').value;if(!/^\\d{4,6}$/.test(a)){toast('PIN-ul trebuie să aibă 4–6 cifre');return}if(a!==b){toast('PIN-urile nu coincid');return}localStorage.setItem(PIN_KEY,a);sessionStorage.setItem('pin_ok','1');$('#pinStatus').textContent='Activ — blocare la pornire';$('#pinManageDialog').close();toast('PIN actualizat')});
+ $('#exportBackupBtn').addEventListener('click',()=>{const backup={version:2,exportedAt:new Date().toISOString(),payments:state.payments,history:state.history,messages:scheduledMessages,preferences:load(PREFS_KEY,{}),waText:localStorage.getItem('pr_default_wa_text')||''};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='payment-reminder-backup.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exportat')});
+ $('#importBackupInput').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{const b=JSON.parse(await file.text());if(!Array.isArray(b.payments)||!Array.isArray(b.history))throw new Error('invalid');state.payments=b.payments;state.history=b.history;scheduledMessages=Array.isArray(b.messages)?b.messages:[];localStorage.setItem(PREFS_KEY,JSON.stringify(b.preferences||{}));localStorage.setItem('pr_default_wa_text',b.waText||'');save({sync:false});persistMessages();loadPreferences();toast('Backup importat cu succes')}catch{toast('Fișier de backup invalid')}e.target.value=''});
  $('#calendarBtn').addEventListener('click',renderCalendar);$('#reportBtn').addEventListener('click',exportReport);
  $('#themeBtn').addEventListener('click',()=>{const light=document.body.classList.toggle('light-theme');localStorage.setItem(THEME_KEY,light?'light':'dark');$('#themeBtn').textContent=light?'🌙 Temă întunecată':'☀️ Temă luminoasă'});
  if(localStorage.getItem(THEME_KEY)==='light')document.body.classList.add('light-theme');
+ if(localStorage.getItem(PIN_KEY))$('#pinStatus').textContent='Activ — blocare la pornire';else $('#pinStatus').textContent='Neconfigurat — configurează la prima deschidere';
 }
 
 function renderAll(){renderHome();renderFriends();renderHistory();renderPro();updateNotifStatus();updateCloudStatus()}
