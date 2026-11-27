@@ -13,6 +13,19 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <section id="accountGate" class="account-gate" aria-label="Conectare Payment Reminder">
+    <div class="account-panel">
+      <div class="pin-brand"><div class="pin-logo">₿</div><span>PAYMENT REMINDER</span></div>
+      <div class="account-hero">☁️</div>
+      <p class="eyebrow">BINE AI VENIT</p>
+      <h1>Plățile tale, mereu la îndemână</h1>
+      <p class="account-subtitle">Conectează-te cu Google pentru sincronizare pe toate dispozitivele sau continuă fără cont.</p>
+      <button id="googleSignInBtn" class="primary account-action"><span>G</span> Continuă cu Google</button>
+      <button id="guestSignInBtn" class="secondary account-action">Continuă fără cont</button>
+      <p id="accountError" class="account-error" aria-live="polite"></p>
+      <small class="pin-foot">DATELE RĂMÂN PRIVATE ȘI SUNT ASOCIATE CONTULUI TĂU</small>
+    </div>
+  </section>
   <section id="pinGate" class="pin-gate" aria-label="Protecție Payment Reminder">
     <div class="pin-glow"></div>
     <div class="pin-panel">
@@ -94,7 +107,11 @@
       <section id="settingsView" class="view">
         <div class="section-head"><div><h2>Setări</h2><p>Personalizare, securitate și administrarea datelor.</p></div></div>
         <div class="settings-card">
-          <div class="settings-intro"><div class="settings-icon">⚙️</div><div><b>Preferințele tale</b><small>Configurează aplicația exact cum ai nevoie.</small></div></div>
+          <div class="settings-intro"><div class="settings-icon">⚙️</div><div><b>Preferințele tale</b><small>Configurează aplicația exact cum ai nevoie.</small></div></div><div class="settings-extra account-settings">
+            <h3>👤 Cont și sincronizare</h3>
+            <div class="setting-row"><div><b id="accountLabel">Neconectat</b><small id="accountStatus">Date locale pe acest dispozitiv</small></div><button id="accountActionBtn" class="secondary">Conectare Google</button></div>
+            <p class="note">Cu Google, plățile, istoricul, mesajele programate și preferințele se sincronizează între dispozitive. Fără cont, datele rămân pe acest telefon.</p>
+          </div>
           <div class="setting-row">
             <div><b>Notificări</b><small id="notifStatus">Neactivate</small></div>
             <button id="enableNotifBtn" class="secondary">Activează</button>

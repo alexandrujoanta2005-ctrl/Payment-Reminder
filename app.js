@@ -7,7 +7,7 @@ const state={payments:load(STORAGE_KEY,[]),history:load(HISTORY_KEY,[])};
 const cloud={client:null,user:null,ready:false,pushReady:false,busy:false};
 
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
-function save({sync=true}={}){localStorage.setItem(STORAGE_KEY,JSON.stringify(state.payments));localStorage.setItem(HISTORY_KEY,JSON.stringify(state.history));renderAll();if(sync)queueCloudSync()}
+function save({sync=true}={}){localStorage.setItem(STORAGE_KEY,JSON.stringify(state.payments));localStorage.setItem(HISTORY_KEY,JSON.stringify(state.history));renderAll();if(sync)queueCloudSync();queueAppSync()}
 function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function fmtMoney(v,c='RON'){try{return new Intl.NumberFormat('ro-RO',{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(v)||0)}catch{return `${v} ${c}`}}
 function fmtDate(date,time){const d=new Date(`${date}T${time||'00:00'}`);return d.toLocaleString('ro-RO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
@@ -41,7 +41,7 @@ function shareWhatsApp(p){
 
 const MSG_KEY='payment_reminder_scheduled_whatsapp_v1';
 let scheduledMessages=load(MSG_KEY,[]);
-function persistMessages(){localStorage.setItem(MSG_KEY,JSON.stringify(scheduledMessages));renderScheduledMessages();}
+function persistMessages(){localStorage.setItem(MSG_KEY,JSON.stringify(scheduledMessages));renderScheduledMessages();queueAppSync();}
 function renderScheduledMessages(){
  let box=document.getElementById('scheduledMessagesList');if(!box)return;
  box.innerHTML=scheduledMessages.length?scheduledMessages.map(m=>`<article class="payment-card"><div><b>${escapeHtml(m.person)}</b><small>${escapeHtml(m.phone)} · ${escapeHtml(m.date)} ${escapeHtml(m.time)}</small><p>${escapeHtml(m.text)}</p><div class="row-actions"><button class="secondary" data-sendmsg="${m.id}">Deschide WhatsApp</button><button class="danger" data-delmsg="${m.id}">Șterge</button></div></div></article>`).join(''):'<p class="empty">Nu ai mesaje programate.</p>';
@@ -70,7 +70,7 @@ document.getElementById('messageForm').addEventListener('submit',e=>{
 
 const PREFS_KEY='payment_reminder_preferences_v1';
 function loadPreferences(){const p=load(PREFS_KEY,{});$('#profileName').value=p.profileName||'';$('#defaultCurrency').value=p.currency||'RON';$('#defaultReminderTime').value=p.reminderTime||'18:00';$('#defaultWaText').value=localStorage.getItem('pr_default_wa_text')||''}
-$('#savePreferences').addEventListener('click',()=>{const p={profileName:$('#profileName').value.trim(),currency:$('#defaultCurrency').value,reminderTime:$('#defaultReminderTime').value||'18:00'};localStorage.setItem(PREFS_KEY,JSON.stringify(p));localStorage.setItem('pr_default_wa_text',$('#defaultWaText').value.trim());toast('Acceptat — preferințele au fost salvate')});
+$('#savePreferences').addEventListener('click',()=>{const p={profileName:$('#profileName').value.trim(),currency:$('#defaultCurrency').value,reminderTime:$('#defaultReminderTime').value||'18:00'};localStorage.setItem(PREFS_KEY,JSON.stringify(p));localStorage.setItem('pr_default_wa_text',$('#defaultWaText').value.trim());queueAppSync();toast('Acceptat — preferințele au fost salvate')});
 $('#resetPreferences').addEventListener('click',()=>{if(!confirm('Resetezi preferințele?'))return;localStorage.removeItem(PREFS_KEY);localStorage.removeItem('pr_default_wa_text');loadPreferences();toast('Preferințe resetate')});
 $('#refreshAppBtn').addEventListener('click',()=>{renderAll();renderScheduledMessages();toast('Date reîmprospătate')});
 $('#clearLocalBtn').addEventListener('click',()=>{if(!confirm('Ștergi toate plățile, istoricul și mesajele programate local? Această acțiune nu poate fi anulată.'))return;state.payments=[];state.history=[];scheduledMessages=[];save({sync:false});persistMessages();localStorage.removeItem(NOTIFIED_KEY);toast('Date locale șterse')});
@@ -151,6 +151,87 @@ setInterval(checkReminders,30000);document.addEventListener('visibilitychange',(
 $('#exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({payments:state.payments,history:state.history,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`payment-reminder-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)});
 $('#importInput').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.payments)||!Array.isArray(data.history))throw new Error();state.payments=data.payments;state.history=data.history;save();toast('Backup importat')}catch{toast('Fișier de backup invalid')}e.target.value=''});
 
+
+
+// ---------- CONT AUTH + SINCRONIZARE DATE ----------
+const APP_SUPABASE_URL='https://mmgclcdmywnumvdmvlhi.supabase.co';
+const APP_SUPABASE_KEY='sb_publishable_-sCDXSyqX8rJ5IAXMwQwSw_875YOJJT';
+let appAuthClient=null, appUser=null, appSyncBusy=false;
+function appClient(){
+ if(!window.supabase?.createClient)throw new Error('Biblioteca Supabase nu s-a încărcat.');
+ if(!appAuthClient)appAuthClient=window.supabase.createClient(APP_SUPABASE_URL,APP_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ return appAuthClient;
+}
+function setAccountUi(user){
+ appUser=user||null;
+ const gate=$('#accountGate');
+ if(gate)gate.classList.toggle('visible',!user);
+ const label=$('#accountLabel'),status=$('#accountStatus'),btn=$('#accountActionBtn');
+ if(label)label.textContent=user?(user.is_anonymous?'Utilizare fără cont':(user.email||'Conectat cu Google')):'Neconectat';
+ if(status)status.textContent=user?.is_anonymous?'Date pe acest dispozitiv; sesiune anonimă.':user?'Sincronizare cloud activă':'Date locale pe acest dispozitiv';
+ if(btn){btn.textContent=user&&!user.is_anonymous?'Deconectare':'Conectare Google';}
+}
+function localAppPayload(){return {payments:state.payments,history:state.history,messages:scheduledMessages,preferences:load(PREFS_KEY,{}),waText:localStorage.getItem('pr_default_wa_text')||'',updatedAt:new Date().toISOString()}}
+function applyAppPayload(p){
+ if(!p)return;
+ if(Array.isArray(p.payments))state.payments=p.payments;
+ if(Array.isArray(p.history))state.history=p.history;
+ if(Array.isArray(p.messages))scheduledMessages=p.messages;
+ if(p.preferences)localStorage.setItem(PREFS_KEY,JSON.stringify(p.preferences));
+ if(typeof p.waText==='string')localStorage.setItem('pr_default_wa_text',p.waText);
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(state.payments));localStorage.setItem(HISTORY_KEY,JSON.stringify(state.history));localStorage.setItem(MSG_KEY,JSON.stringify(scheduledMessages));
+ loadPreferences();renderAll();renderScheduledMessages();
+}
+async function syncWholeApp(){
+ if(!appUser||appUser.is_anonymous||appSyncBusy)return;
+ appSyncBusy=true;
+ try{
+  const c=appClient(),payload=localAppPayload();
+  const {error}=await c.from('user_app_data').upsert({user_id:appUser.id,payload,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  if(error)throw error;
+  if($('#accountStatus'))$('#accountStatus').textContent='Sincronizat în cloud ✓';
+ }catch(e){console.error('App sync',e);toast('Nu s-a putut sincroniza: '+(e.message||'verifică tabelul user_app_data'))}
+ finally{appSyncBusy=false}
+}
+let appSyncTimer;
+function queueAppSync(){if(!appUser||appUser.is_anonymous)return;clearTimeout(appSyncTimer);appSyncTimer=setTimeout(syncWholeApp,700)}
+async function loadCloudAppData(){
+ if(!appUser||appUser.is_anonymous)return;
+ const c=appClient();const {data,error}=await c.from('user_app_data').select('payload').eq('user_id',appUser.id).maybeSingle();
+ if(error)throw error;
+ if(data?.payload){applyAppPayload(data.payload);toast('Datele contului au fost încărcate')}
+ else{await syncWholeApp();toast('Datele locale au fost salvate în contul Google')}
+}
+async function continueAsGuest(){
+ try{const c=appClient();const {data,error}=await c.auth.signInAnonymously();if(error)throw error;setAccountUi(data.user);$('#accountGate').classList.remove('visible');toast('Continui fără cont');}
+ catch(e){$('#accountError').textContent=/anonymous/i.test(e.message)?'Activează Anonymous Sign-Ins în Supabase → Authentication → Providers → Anonymous.':e.message}
+}
+async function continueWithGoogle(){
+ try{const c=appClient();const {error}=await c.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://alexandrujoanta2005-ctrl.github.io/Payment-Reminder/'}});if(error)throw error}
+ catch(e){$('#accountError').textContent=e.message||'Conectarea Google nu a reușit'}
+}
+async function initAppAccount(){
+ try{
+  const c=appClient();const {data,error}=await c.auth.getSession();if(error)throw error;
+  const user=data.session?.user;
+  if(!user){setAccountUi(null);return}
+  setAccountUi(user);
+  if(!user.is_anonymous)await loadCloudAppData();
+ }catch(e){console.error('Auth init',e);setAccountUi(null);$('#accountError').textContent='Conectarea la Supabase nu a reușit: '+e.message}
+}
+$('#googleSignInBtn').addEventListener('click',continueWithGoogle);
+$('#guestSignInBtn').addEventListener('click',continueAsGuest);
+$('#accountActionBtn').addEventListener('click',async()=>{
+ if(appUser&&!appUser.is_anonymous){if(!confirm('Te deconectezi din contul Google? Datele rămân în cloud.'))return;await appClient().auth.signOut();setAccountUi(null)}
+ else{continueWithGoogle()}
+});
+if(window.supabase?.createClient){
+ appClient().auth.onAuthStateChange(async(_event,session)=>{
+  const user=session?.user||null;setAccountUi(user);
+  if(user&&!user.is_anonymous&&_event==='SIGNED_IN'){try{await loadCloudAppData()}catch(e){console.error(e);toast('Eroare la încărcarea datelor din cont')}}
+ });
+}
+
 // ---------- PUSH CLOUD / SUPABASE ----------
 function getCloudConfig(){return load(CLOUD_CONFIG_KEY,{supabaseUrl:'',supabaseKey:'',vapidPublicKey:''})}
 function cleanCloudConfig(c){return {supabaseUrl:(c.supabaseUrl||'').trim().replace(/\/+$/,''),supabaseKey:(c.supabaseKey||'').trim(),vapidPublicKey:(c.vapidPublicKey||'').trim()}}
@@ -213,4 +294,4 @@ async function sendCloudTestPush(){
 }
 
 if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{await navigator.serviceWorker.register('service-worker.js');if(hasCloudConfig())await initCloud({subscribe:Notification.permission==='granted'})}catch(e){console.warn(e)}});
-renderAll();renderScheduledMessages();loadPreferences();setupPin();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});
+renderAll();renderScheduledMessages();loadPreferences();setupPin();initAppAccount();checkReminders();checkScheduledMessages();setInterval(checkScheduledMessages,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkScheduledMessages()});

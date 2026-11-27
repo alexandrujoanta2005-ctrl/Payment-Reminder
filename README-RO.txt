@@ -34,3 +34,16 @@ PAYMENT REMINDER PRO – funcții adăugate
 - Temă luminoasă / întunecată.
 - PIN local (protecție simplă pe dispozitiv; nu este Face ID).
 - Face ID și widget iOS nativ necesită o aplicație nativă iOS, nu sunt disponibile direct într-un PWA.
+
+\nAUTENTIFICARE GOOGLE ȘI SINCRONIZARE (VERSIUNE MODERN)\n
+1. În Supabase → SQL Editor, rulează fișierul setup-auth-sync.sql inclus în arhivă.
+2. În Supabase → Authentication → Providers → Anonymous, activează Anonymous Sign-Ins pentru butonul „Continuă fără cont”.
+3. În Supabase → Authentication → URL Configuration, Site URL și Redirect URL trebuie să includă:
+   https://alexandrujoanta2005-ctrl.github.io/Payment-Reminder/
+4. În Google Cloud OAuth Web Client:
+   Authorized JavaScript origins: https://alexandrujoanta2005-ctrl.github.io
+   Authorized redirect URI: https://mmgclcdmywnumvdmvlhi.supabase.co/auth/v1/callback
+5. În Supabase → Authentication → Providers → Google, activează Google și introdu Client ID și Client Secret.
+6. Încarcă fișierele din arhivă în repository-ul GitHub Pages.
+
+Sincronizarea completă a datelor aplicației folosește tabelul user_app_data și RLS, astfel fiecare cont poate citi și modifica doar propriul rând. Datele utilizatorilor fără cont rămân locale; Supabase creează o sesiune anonimă pentru fluxul de acces, dar nu sincronizează datele anonime între dispozitive.
