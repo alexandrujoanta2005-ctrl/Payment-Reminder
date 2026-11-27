@@ -94,19 +94,12 @@ function setupPin(){
  }
  submit.addEventListener('click',unlock);input.addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
 
- // Recuperare PIN: permisă numai pentru un cont Google autentificat.
- let forgotPinButton=$('#pinForgotBtn');
- if(!forgotPinButton){
-   forgotPinButton=document.createElement('button');
-   forgotPinButton.id='pinForgotBtn';
-   forgotPinButton.type='button';
-   forgotPinButton.className='secondary';
-   forgotPinButton.textContent='Am uitat PIN-ul?';
-   forgotPinButton.style.marginTop='10px';
-   forgotPinButton.style.width='100%';
-   submit.insertAdjacentElement('afterend',forgotPinButton);
- }
- forgotPinButton.addEventListener('click',async()=>{
+ // Recuperare PIN: butonul este prezent direct în index.html.
+ const forgotPinButton=$('#pinForgotBtn');
+ if(forgotPinButton){
+ forgotPinButton.onclick=async(event)=>{
+   event.preventDefault();
+   if(forgotPinButton.disabled)return;
    forgotPinButton.disabled=true;
    const oldText=forgotPinButton.textContent;
    forgotPinButton.textContent='Verific contul…';
@@ -154,7 +147,8 @@ function setupPin(){
      forgotPinButton.disabled=false;
      forgotPinButton.textContent=oldText;
    }
- });
+ };
+ }
  $('#pinBtn').addEventListener('click',()=>{$('#newPinInput').value='';$('#confirmPinInput').value='';$('#pinManageDialog').showModal()});
  $('#closePinManage').addEventListener('click',()=>$('#pinManageDialog').close());
  $('#pinManageForm').addEventListener('submit',e=>{e.preventDefault();const a=$('#newPinInput').value,b=$('#confirmPinInput').value;if(!/^\d{4,6}$/.test(a)){toast('PIN-ul trebuie să aibă 4–6 cifre');return}if(a!==b){toast('PIN-urile nu coincid');return}localStorage.setItem(PIN_KEY,a);sessionStorage.setItem('pin_ok','1');$('#pinStatus').textContent='Activ — blocare la pornire';$('#pinManageDialog').close();toast('PIN actualizat')});
