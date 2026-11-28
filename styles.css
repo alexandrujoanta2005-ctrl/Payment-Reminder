@@ -341,3 +341,49 @@ html{font-size:var(--app-font-size,16px)}
 .admin-delete-button{border:1px solid rgba(248,113,113,.42);background:rgba(127,29,29,.22);color:#fecaca;border-radius:11px;padding:9px 11px;font-weight:800;cursor:pointer}
 .admin-delete-button:disabled{opacity:.55}
 @media(max-width:520px){.admin-user-actions{width:100%;flex-direction:column;align-items:stretch}.admin-user-actions button{width:100%}.admin-top-button{padding:9px 10px}.admin-panel-dialog{width:96vw;padding:12px}}
+
+/* ADMIN RESPONSIVE POLISH — lizibil pe telefoane și tablete */
+.admin-panel,
+.admin-panel-dialog,
+.admin-panel-dialog *{box-sizing:border-box}
+.admin-panel{width:100%;min-width:0;overflow:hidden}
+.admin-panel-dialog{box-sizing:border-box;overscroll-behavior:contain}
+.admin-users{width:100%;min-width:0;overflow-x:hidden}
+.admin-user-row{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.admin-user-info{width:100%;min-width:0;max-width:100%;overflow:hidden}
+.admin-user-info strong,.admin-user-info small{display:block;max-width:100%;white-space:normal;word-break:normal;overflow-wrap:anywhere;line-height:1.4}
+.admin-user-actions{min-width:0;max-width:100%;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.admin-user-actions button{max-width:100%;white-space:normal;line-height:1.25}
+.admin-history-row{min-width:0;align-items:center;gap:10px}
+.admin-history-row span{min-width:0;overflow-wrap:anywhere;word-break:normal;line-height:1.45}
+.admin-toolbar{min-width:0}
+.admin-toolbar input{width:100%;max-width:100%;box-sizing:border-box}
+@media(max-width:600px){
+ .admin-panel{padding:14px;border-radius:18px}
+ .admin-top{gap:8px;align-items:flex-start}
+ .admin-top h3{font-size:1.08rem;line-height:1.25}
+ .admin-top p{font-size:.8rem;line-height:1.45}
+ .admin-live{flex-shrink:0;font-size:.6rem;padding:5px 7px}
+ .admin-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:13px 0}
+ .admin-stats article{min-width:0;padding:9px 7px}
+ .admin-stats small{font-size:.62rem;line-height:1.3;overflow-wrap:anywhere}
+ .admin-stats strong{font-size:1.2rem}
+ .admin-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+ .admin-toolbar input{min-width:0;font-size:.88rem;padding:12px 10px}
+ .admin-toolbar button{padding:10px 11px;font-size:.82rem}
+ .admin-user-row{grid-template-columns:minmax(0,1fr);gap:10px;padding:13px}
+ .admin-user-info{width:100%;min-width:0}
+ .admin-user-info strong{font-size:.95rem}
+ .admin-user-info small{font-size:.8rem}
+ .admin-user-actions{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+ .admin-user-actions button{width:100%;min-width:0;padding:11px 8px;font-size:.78rem}
+ .admin-history{margin-top:16px}
+ .admin-history-row{align-items:flex-start;padding:11px;font-size:.73rem}
+}
+@media(max-width:360px){
+ .admin-panel{padding:11px}
+ .admin-stats small{font-size:.57rem}
+ .admin-toolbar{grid-template-columns:minmax(0,1fr)}
+ .admin-toolbar button{width:100%}
+ .admin-user-actions{grid-template-columns:minmax(0,1fr)}
+}
